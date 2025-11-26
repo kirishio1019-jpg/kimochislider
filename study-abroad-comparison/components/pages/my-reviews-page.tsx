@@ -171,9 +171,9 @@ export default function MyReviewsPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center py-12 bg-card border border-border rounded-lg">
-            <h2 className="text-2xl font-bold text-foreground mb-4">ログインが必要です</h2>
-            <p className="text-muted-foreground mb-6">
+          <div className="text-center py-12 bg-card border border-border rounded-lg max-w-4xl mx-auto">
+            <h2 className="text-responsive-2xl font-bold text-foreground mb-4 break-words">ログインが必要です</h2>
+            <p className="text-responsive-base text-muted-foreground mb-6 break-words">
               マイレビューを表示するには、Googleでログインしてください。
             </p>
           </div>
@@ -187,50 +187,50 @@ export default function MyReviewsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* ヘッダー */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">マイレビュー</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-responsive-3xl font-bold text-foreground mb-2 break-words">マイレビュー</h1>
+          <p className="text-responsive-base text-muted-foreground break-words">
             あなたが投稿したレビューの一覧です。編集や削除ができます。
           </p>
         </div>
 
         {/* レビュー一覧 */}
         {reviews.length > 0 ? (
-          <div className="space-y-6">
+          <div className="grid gap-6">
             {reviews.map((review) => (
               <div key={review.id} className="relative group">
                 <ReviewCard review={review} />
                 {/* アクションボタン */}
-                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                   <button
                     onClick={() => handleEdit(review.id)}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium text-sm shadow-lg"
+                    className="px-3 sm:px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium text-responsive-sm shadow-lg whitespace-nowrap"
                   >
                     編集
                   </button>
                   <button
                     onClick={() => handleDelete(review.id)}
-                    className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 transition-opacity font-medium text-sm shadow-lg"
+                    className="px-3 sm:px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 transition-opacity font-medium text-responsive-sm shadow-lg whitespace-nowrap"
                   >
                     削除
                   </button>
                 </div>
               </div>
             ))}
-            <div className="text-center text-sm text-muted-foreground mt-8">
+            <div className="text-center text-responsive-sm text-muted-foreground mt-8">
               {reviews.length}件のレビューを投稿しています
             </div>
           </div>
         ) : (
           <div className="text-center py-12 bg-card border border-border rounded-lg">
-            <p className="text-muted-foreground mb-2">まだレビューを投稿していません。</p>
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-responsive-base text-muted-foreground mb-2 break-words">まだレビューを投稿していません。</p>
+            <p className="text-responsive-sm text-muted-foreground mb-6 break-words">
               最初のレビューを投稿してみましょう！
             </p>
             <button
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('pageChange', { detail: { page: 'post-review' } }))
               }}
-              className="px-6 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all duration-200 font-medium"
+              className="px-4 sm:px-6 py-3 bg-gradient-to-r from-primary to-secondary text-primary-foreground rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all duration-200 font-medium text-responsive-base"
             >
               レビューを投稿する
             </button>

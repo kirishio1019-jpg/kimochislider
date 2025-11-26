@@ -235,3 +235,4 @@ export default function DetailPage({ reviewId }: DetailPageProps) {
 
 
 
+

@@ -52,31 +52,31 @@ export default function ReviewCard({ review }: ReviewCardProps) {
 
   return (
     <div 
-      className="group bg-card border border-border rounded-xl p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer"
+      className="group bg-card border border-border rounded-xl p-4 sm:p-6 hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer min-w-0"
       onClick={handleClick}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <div className="flex items-baseline gap-3 mb-4 flex-wrap">
-            <span className="text-3xl font-extrabold text-foreground">
+      <div className="flex items-start justify-between mb-4 min-w-0">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2 sm:gap-3 mb-4 flex-wrap min-w-0">
+            <span className="text-responsive-2xl sm:text-responsive-3xl font-extrabold text-foreground break-words">
               {review.university}
             </span>
-            <span className="text-lg font-semibold text-foreground">
+            <span className="text-responsive-lg font-semibold text-foreground break-words">
               {review.country}
             </span>
           </div>
-          <h3 className="text-lg font-semibold text-foreground leading-relaxed">{review.title}</h3>
+          <h3 className="text-responsive-lg font-semibold text-foreground leading-relaxed break-words">{review.title}</h3>
         </div>
       </div>
 
       <div className="mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xl text-accent">{getStars(review.satisfaction)}</span>
-          <span className="text-sm font-medium text-foreground">{review.satisfaction}/5.0</span>
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <span className="text-responsive-xl text-accent break-words">{getStars(review.satisfaction)}</span>
+          <span className="text-responsive-sm font-medium text-foreground break-words">{review.satisfaction}/5.0</span>
         </div>
       </div>
 
-      <p className="text-foreground/90 mb-5 leading-relaxed">{review.excerpt}</p>
+      <p className="text-responsive-base text-foreground/90 mb-5 leading-relaxed break-words">{review.excerpt}</p>
 
       <div className="mb-4 pb-4 border-b border-border/50">
         {review.strongFields && review.strongFields.length > 0 && (
@@ -118,27 +118,27 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-5 py-4 border-b border-border/50 bg-muted/30 px-3 rounded-lg">
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-1.5">物価レベル</p>
-          <p className="font-semibold text-foreground">
+      <div className="grid grid-cols-2 gap-3 mb-5 py-4 border-b border-border/50 bg-muted/30 px-3 rounded-lg min-w-0">
+        <div className="min-w-0">
+          <p className="text-responsive-xs font-medium text-muted-foreground mb-1.5 break-words">物価レベル</p>
+          <p className="text-responsive-sm font-semibold text-foreground break-words">
             {review.costOfLiving ? (costOfLivingLabels[review.costOfLiving] || review.costOfLiving) : "-"}
           </p>
         </div>
-        <div>
-          <p className="text-xs font-medium text-muted-foreground mb-1.5">投稿者</p>
-          <p className="font-semibold text-foreground">{review.author}</p>
+        <div className="min-w-0">
+          <p className="text-responsive-xs font-medium text-muted-foreground mb-1.5 break-words">投稿者</p>
+          <p className="text-responsive-sm font-semibold text-foreground break-words">{review.author}</p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">{review.date}</p>
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <p className="text-responsive-xs text-muted-foreground break-words">{review.date}</p>
         <button 
           onClick={(e) => {
             e.stopPropagation()
             handleClick()
           }}
-          className="px-3 py-2 text-sm font-medium text-primary hover:text-secondary transition-colors group-hover:translate-x-1 duration-200"
+          className="px-2 sm:px-3 py-2 text-responsive-sm font-medium text-primary hover:text-secondary transition-colors group-hover:translate-x-1 duration-200 whitespace-nowrap flex-shrink-0"
         >
           詳細を見る →
         </button>
