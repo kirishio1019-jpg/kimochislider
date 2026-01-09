@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FeelingSlider } from "@/components/feeling-slider"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, Calendar, MapPin, DollarSign, User } from "lucide-react"
 import { generateToken, getAppUrl } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 import type { Event } from "@/types"
@@ -199,6 +199,18 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  // 日時のフォーマット
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return {
+      date: date.toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric", weekday: "short" }),
+      time: date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })
+    }
+  }
+
+  const startDateTime = formatDateTime(event.start_at)
+  const endDateTime = event.end_at ? formatDateTime(event.end_at) : null
 
   if (submitted) {
     return (
@@ -511,225 +523,145 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
     )
   }
 
-  // 通常モード（ブラウザ）- 埋め込み版の内容を反映
+  // 通常モード（ブラウザ）- メッセージURLと同じ構造
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="space-y-6 text-center">
-          <h1 className="text-xl font-light leading-tight tracking-wide">{event.title}</h1>
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 shadow-sm">
-              <span className="text-base font-bold text-primary">
-                {responseCount}
-              </span>
-              <span className="text-xs font-medium text-foreground">
-                人がスライドした
-              </span>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-background p-4 md:p-8">
+      <div className="mx-auto max-w-2xl py-8">
+        <Card className="border-border/40 shadow-md">
+          <CardHeader className="space-y-6 pb-6">
+            {/* イベントタイトル */}
+            <CardTitle className="text-balance text-2xl font-light tracking-wide md:text-3xl">
+              {event.title}
+            </CardTitle>
 
-        {/* スライダー */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="rounded-2xl border border-border/50 bg-muted/25 backdrop-blur-sm p-6 shadow-md">
-            <FeelingSlider
-              value={score}
-              onChange={setScore}
-              disabled={isSubmitting}
-              showMatrix={false}
-              xValue={xValue}
-              yValue={yValue}
-              onXChange={setXValue}
-              onYChange={setYValue}
-              availabilityStatus={availabilityStatus}
-              onAvailabilityChange={setAvailabilityStatus}
-            />
-          </div>
-
-          {/* カスタムコンテンツまたはデフォルトの注意書き */}
-          {(() => {
-            if (!event.public_page_content) {
-              return (
-                <div className="space-y-2 text-xs text-muted-foreground/70 text-center font-light">
-                  <p>応募内容はいつでも変更可能です。</p>
-                  <p>他の参加者には見えない完全匿名性</p>
+            {/* イベント情報 */}
+            <div className="flex flex-col gap-4 rounded-2xl border border-border/30 bg-muted/10 p-5">
+              {/* 概要 */}
+              {event.description_short && (
+                <div className="text-sm text-foreground font-light leading-relaxed">
+                  {event.description_short}
                 </div>
-              )
-            }
+              )}
 
-            try {
-              const items = JSON.parse(event.public_page_content)
-              if (Array.isArray(items) && items.length > 0) {
-                return (
-                  <div className="space-y-3">
-                    {items
-                      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-                      .map((item: any) => {
-                        if (item.type === 'select') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="space-y-2"
-                            >
-                              {item.content && (
-                                <p className="text-xs font-medium text-foreground text-center mb-2">
-                                  {item.content}
-                                </p>
-                              )}
-                              <div className="space-y-2">
-                                {item.options?.map((option: string, idx: number) => (
-                                  <label
-                                    key={idx}
-                                    className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-background/50 cursor-pointer hover:bg-background/80"
-                                  >
-                                    <input
-                                      type="radio"
-                                      name={`select-${item.id}`}
-                                      className="size-4"
-                                      disabled
-                                    />
-                                    <span className="text-xs font-light text-foreground">{option}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          )
-                        } else if (item.type === 'checkbox') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="space-y-2"
-                            >
-                              {item.content && (
-                                <p className="text-xs font-medium text-foreground text-center mb-2">
-                                  {item.content}
-                                </p>
-                              )}
-                              <div className="space-y-2">
-                                {item.options?.map((option: string, idx: number) => (
-                                  <label
-                                    key={idx}
-                                    className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-background/50 cursor-pointer hover:bg-background/80"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      name={`checkbox-${item.id}`}
-                                      className="size-4"
-                                      disabled
-                                    />
-                                    <span className="text-xs font-light text-foreground">{option}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          )
-                        } else if (item.type === 'text_input') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="space-y-2"
-                            >
-                              {item.label && (
-                                <Label className="text-xs font-medium text-foreground">
-                                  {item.label}
-                                  {item.required && <span className="text-destructive ml-1">*</span>}
-                                </Label>
-                              )}
-                              <Input
-                                placeholder={item.placeholder || ''}
-                                disabled
-                                className="font-light text-xs"
-                              />
-                            </div>
-                          )
-                        } else if (item.type === 'textarea') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="space-y-2"
-                            >
-                              {item.label && (
-                                <Label className="text-xs font-medium text-foreground">
-                                  {item.label}
-                                  {item.required && <span className="text-destructive ml-1">*</span>}
-                                </Label>
-                              )}
-                              <textarea
-                                placeholder={item.placeholder || ''}
-                                disabled
-                                rows={3}
-                                className="flex min-h-[80px] w-full rounded-xl border border-border/50 bg-background/80 px-3 py-2 text-xs font-light ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 resize-y"
-                              />
-                            </div>
-                          )
-                        } else if (item.type === 'notice') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-3 text-xs text-foreground text-center font-light"
-                            >
-                              {item.content}
-                            </div>
-                          )
-                        } else if (item.type === 'html') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="text-xs text-muted-foreground/70 text-center font-light"
-                              dangerouslySetInnerHTML={{ __html: item.content }}
-                            />
-                          )
-                        } else if (item.type === 'notice') {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-3 text-xs text-foreground text-center font-light"
-                            >
-                              {item.content}
-                            </div>
-                          )
-                        } else {
-                          return (
-                            <div
-                              key={item.id || Math.random()}
-                              className="space-y-2"
-                            >
-                              {item.title && (
-                                <p className="text-xs font-medium text-foreground text-center mb-2">
-                                  {item.title}
-                                </p>
-                              )}
-                              <p className="text-xs text-muted-foreground/70 text-center font-light">
-                                {item.content}
-                              </p>
-                            </div>
-                          )
-                        }
-                      })}
+              {/* 日時 */}
+              <div className="flex items-start gap-3 text-sm text-muted-foreground font-light">
+                <Calendar className="mt-0.5 size-4 shrink-0" />
+                <div className="flex flex-col gap-0.5">
+                  <span>{startDateTime.date}</span>
+                  <span className="text-xs">
+                    {startDateTime.time}
+                    {endDateTime && ` - ${endDateTime.time}`}
+                  </span>
+                </div>
+              </div>
+
+              {/* 場所 */}
+              {event.location_text && (
+                <div className="flex items-start gap-3 text-sm text-muted-foreground font-light">
+                  <MapPin className="mt-0.5 size-4 shrink-0" />
+                  <div className="flex flex-col gap-0.5">
+                    <span className="line-clamp-2">{event.location_text}</span>
+                    {event.location_type && (
+                      <span className="text-xs">
+                        {event.location_type === "online" ? "オンライン開催" : "対面開催"}
+                      </span>
+                    )}
                   </div>
-                )
-              }
-            } catch {
-              // JSONパースに失敗した場合、旧形式（単一のHTML文字列）として扱う
-              return (
-                <div
-                  className="space-y-2 text-xs text-muted-foreground/70 text-center font-light"
-                  dangerouslySetInnerHTML={{ __html: event.public_page_content }}
+                </div>
+              )}
+
+              {/* 参加費 */}
+              {event.fee_text && (
+                <div className="flex items-center gap-3 text-sm text-muted-foreground font-light">
+                  <DollarSign className="size-4 shrink-0" />
+                  <span className="line-clamp-1">{event.fee_text}</span>
+                </div>
+              )}
+
+              {/* 主催者 */}
+              {event.organizer_name && (
+                <div className="flex items-center gap-3 text-sm text-muted-foreground font-light">
+                  <User className="size-4 shrink-0" />
+                  <span className="line-clamp-1">{event.organizer_name}</span>
+                </div>
+              )}
+            </div>
+
+            <CardDescription className="text-pretty text-base leading-relaxed">
+              スライダーで気持ちを入力してください
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="rounded-2xl border border-border/50 bg-muted/25 backdrop-blur-sm p-6 shadow-md">
+                <FeelingSlider
+                  value={score}
+                  onChange={setScore}
+                  disabled={isSubmitting}
+                  showMatrix={false}
+                  xValue={xValue}
+                  yValue={yValue}
+                  onXChange={setXValue}
+                  onYChange={setYValue}
+                  availabilityStatus={availabilityStatus}
+                  onAvailabilityChange={setAvailabilityStatus}
                 />
-              )
-            }
+              </div>
 
-            return null
-          })()}
+              {/* カスタムコンテンツ */}
+              {event.public_page_content && (() => {
+                try {
+                  const items = JSON.parse(event.public_page_content)
+                  if (Array.isArray(items) && items.length > 0) {
+                    return (
+                      <div className="space-y-3">
+                        {items
+                          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                          .map((item: any) => {
+                            if (item.type === 'text') {
+                              return (
+                                <div key={item.id} className="rounded-lg border border-border/30 bg-muted/10 p-4">
+                                  {item.title && (
+                                    <p className="text-sm font-medium text-foreground mb-2">{item.title}</p>
+                                  )}
+                                  <p className="text-sm text-muted-foreground font-light whitespace-pre-wrap">
+                                    {item.content}
+                                  </p>
+                                </div>
+                              )
+                            }
+                            if (item.type === 'select') {
+                              return (
+                                <div key={item.id} className="rounded-lg border border-border/30 bg-muted/10 p-4">
+                                  <p className="text-sm font-medium text-foreground mb-2">{item.content}</p>
+                                  <div className="space-y-2">
+                                    {item.options?.map((option: string, idx: number) => (
+                                      <label key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <input type="radio" disabled className="size-4" />
+                                        <span>{option}</span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            }
+                            return null
+                          })}
+                      </div>
+                    )
+                  }
+                } catch (e) {
+                  console.error('Failed to parse public_page_content:', e)
+                }
+                return null
+              })()}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-light shadow-md hover:shadow-lg hover:bg-primary/85 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "送信中..." : "今の気持ちを保存する"}
-          </button>
-        </form>
+              <Button type="submit" disabled={isSubmitting} size="lg" className="w-full font-light">
+                {isSubmitting ? "保存中..." : "気持ちを保存する"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
