@@ -75,16 +75,35 @@ WHERE x_value IS NULL OR y_value IS NULL;
 
 **解決策**: 以下のSQLを実行してRLSポリシーを確認・修正：
 
-```sql
--- ResponsesテーブルのRLSポリシーを確認
-SELECT policyname, cmd, qual, with_check
-FROM pg_policies
-WHERE tablename = 'responses';
+**方法1: 専用のSQLファイルを使用（推奨）**
 
--- パブリック作成アクセスを許可（誰でも回答を作成可能）
+`fix-responses-rls-policy.sql`ファイルの内容をSupabase DashboardのSQL Editorで実行してください。
+
+**方法2: 手動でSQLを実行**
+
+```sql
+-- 既存のINSERTポリシーを削除
 DROP POLICY IF EXISTS "Responses can be created without auth" ON responses;
+DROP POLICY IF EXISTS "Allow public insert access" ON responses;
+DROP POLICY IF EXISTS "Public insert access" ON responses;
+
+-- 新しいINSERTポリシーを作成（誰でも回答を作成可能）
 CREATE POLICY "Responses can be created without auth" ON responses
-  FOR INSERT WITH CHECK (true);
+  FOR INSERT 
+  WITH CHECK (true);
+
+-- SELECTポリシーも確認・作成
+DROP POLICY IF EXISTS "Responses are publicly readable" ON responses;
+CREATE POLICY "Responses are publicly readable" ON responses
+  FOR SELECT 
+  USING (true);
+
+-- UPDATEポリシーも確認・作成
+DROP POLICY IF EXISTS "Responses can be updated with edit_token" ON responses;
+CREATE POLICY "Responses can be updated with edit_token" ON responses
+  FOR UPDATE 
+  USING (true)
+  WITH CHECK (true);
 ```
 
 ## 確認チェックリスト
