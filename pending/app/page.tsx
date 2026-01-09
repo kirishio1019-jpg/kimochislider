@@ -18,6 +18,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
   const [createdEvent, setCreatedEvent] = useState<{
     embedUrl: string
     adminUrl: string
@@ -35,6 +36,16 @@ export default function HomePage() {
       setLoading(false)
     }
     checkUser()
+
+    // URLパラメータからエラーを取得
+    const urlParams = new URLSearchParams(window.location.search)
+    const error = urlParams.get('error')
+    const errorDescription = urlParams.get('error_description')
+    if (error) {
+      setAuthError(errorDescription || error)
+      // URLからエラーパラメータを削除
+      window.history.replaceState({}, '', window.location.pathname)
+    }
 
     // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -432,6 +443,22 @@ export default function HomePage() {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-32 md:py-48 lg:py-56">
+        {/* エラーメッセージ表示 */}
+        {authError && (
+          <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
+            <p className="text-sm font-medium text-destructive">認証エラー</p>
+            <p className="mt-1 text-xs text-destructive/80">{authError}</p>
+            <Button
+              onClick={() => setAuthError(null)}
+              variant="ghost"
+              size="sm"
+              className="mt-2"
+            >
+              閉じる
+            </Button>
+          </div>
+        )}
+        
         <div className="flex flex-col items-center gap-28 text-center">
           <div className="flex flex-col gap-6">
             <div className="relative inline-block">
