@@ -149,9 +149,22 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
         })
       }
     } else {
-      const errorData = await response.json().catch(() => ({}))
-      console.error('Failed to submit response:', errorData)
-      alert('送信に失敗しました。もう一度お試しください。')
+      let errorMessage = '送信に失敗しました。もう一度お試しください。'
+      try {
+        const errorData = await response.json()
+        console.error('Failed to submit response:', errorData)
+        console.error('Response status:', response.status)
+        console.error('Response statusText:', response.statusText)
+        
+        if (errorData.error) {
+          errorMessage = `送信に失敗しました: ${errorData.error}`
+        }
+      } catch (parseError) {
+        console.error('Failed to parse error response:', parseError)
+        console.error('Response status:', response.status)
+        console.error('Response statusText:', response.statusText)
+      }
+      alert(errorMessage)
     }
     setIsSubmitting(false)
   }

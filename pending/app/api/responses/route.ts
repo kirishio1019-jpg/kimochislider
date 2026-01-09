@@ -37,16 +37,29 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
+      console.error('Supabase insert error:', error)
+      console.error('Error code:', error.code)
+      console.error('Error message:', error.message)
+      console.error('Error details:', error.details)
+      console.error('Error hint:', error.hint)
+      
       return NextResponse.json(
-        { error: error.message },
+        { 
+          error: error.message || 'データの保存に失敗しました',
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        },
         { status: 500 }
       )
     }
 
     return NextResponse.json({ data })
   } catch (error) {
+    console.error('Unexpected error in POST /api/responses:', error)
+    const errorMessage = error instanceof Error ? error.message : '予期しないエラーが発生しました'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
