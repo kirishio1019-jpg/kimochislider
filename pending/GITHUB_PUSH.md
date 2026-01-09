@@ -44,7 +44,7 @@ git push origin main
 ### 1. GitHubで新しいリポジトリを作成
 
 1. [GitHub](https://github.com/new)にアクセス
-2. **Repository name**を入力（例: `kimochi-slider`）
+2. **Repository name**を入力: `kimochislider`
 3. **Visibility**を選択：
    - `Public`（公開）または `Private`（非公開）
 4. **その他の設定**：
@@ -62,10 +62,8 @@ PowerShellまたはコマンドプロンプトで実行：
 cd c:\Users\kiris\.cursor\pending
 
 # リモートURLを新しいリポジトリに変更
-git remote set-url origin https://github.com/your-username/your-new-repo-name.git
+git remote set-url origin https://github.com/b2400560-del/kimochislider.git
 ```
-
-⚠️ **重要**: `your-username`と`your-new-repo-name`を実際のGitHubユーザー名とリポジトリ名に置き換えてください
 
 ### 3. 変更をコミットしてプッシュ
 
