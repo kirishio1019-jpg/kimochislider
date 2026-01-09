@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Settings, Calendar, Users, ArrowLeft, Trash2 } from "lucide-react"
+import { Plus, Settings, Calendar, Users, ArrowLeft, Trash2, MapPin, DollarSign, User, Clock } from "lucide-react"
 import type { Event } from "@/types"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
@@ -122,6 +122,7 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {(eventsWithStats.length > 0 ? eventsWithStats : events).map((event) => {
               const startDate = new Date(event.start_at)
+              const endDate = event.end_at ? new Date(event.end_at) : null
               const responseCount: number = 'responseCount' in event ? (event as EventWithStats).responseCount : 0
               
               return (
@@ -141,16 +142,55 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
                     )}
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-light">
-                      <Calendar className="size-4" />
-                      <span>{startDate.toLocaleDateString("ja-JP")}</span>
+                    {/* 日時 */}
+                    <div className="flex items-start gap-2 text-sm text-muted-foreground font-light">
+                      <Calendar className="mt-0.5 size-4 shrink-0" />
+                      <div className="flex flex-col gap-0.5">
+                        <span>{startDate.toLocaleDateString("ja-JP")}</span>
+                        <span className="text-xs">
+                          {startDate.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}
+                          {endDate && ` - ${endDate.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}`}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* 場所と開催形式 */}
                     {event.location_text && (
-                      <div className="text-sm text-muted-foreground font-light line-clamp-1">
-                        {event.location_text}
+                      <div className="flex items-start gap-2 text-sm text-muted-foreground font-light">
+                        <MapPin className="mt-0.5 size-4 shrink-0" />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="line-clamp-1">{event.location_text}</span>
+                          <span className="text-xs">
+                            {event.location_type === "online" ? "オンライン開催" : "対面開催"}
+                          </span>
+                        </div>
                       </div>
                     )}
-                    <div className="flex items-center justify-between pt-2">
+
+                    {/* 費用 */}
+                    {event.fee_text && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground font-light">
+                        <DollarSign className="size-4 shrink-0" />
+                        <span className="line-clamp-1">{event.fee_text}</span>
+                      </div>
+                    )}
+
+                    {/* 主催者 */}
+                    {event.organizer_name && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground font-light">
+                        <User className="size-4 shrink-0" />
+                        <span className="line-clamp-1">{event.organizer_name}</span>
+                      </div>
+                    )}
+
+                    {/* 追加情報（短縮表示） */}
+                    {event.additional_info && (
+                      <div className="text-xs text-muted-foreground font-light line-clamp-2">
+                        {event.additional_info}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border/50">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground font-light">
                         <Users className="size-4" />
                         <span>回答: {responseCount}人</span>
