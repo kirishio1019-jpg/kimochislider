@@ -58,24 +58,24 @@ export async function GET(request: NextRequest) {
               top: 0,
               left: '50%',
               transform: 'translateX(-50%)',
-              width: 200,
-              height: 80,
-              background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)',
-              clipPath: 'polygon(0 0, 100% 0, 85% 100%, 15% 100%)',
-              boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
+              width: 300,
+              height: 100,
+              background: 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 50%, #ff8e8e 100%)',
+              clipPath: 'polygon(0 0, 100% 0, 88% 100%, 12% 100%)',
+              boxShadow: '0 6px 16px rgba(255, 107, 107, 0.4)',
             }}
           />
           <div
             style={{
               position: 'absolute',
-              top: 20,
+              top: 25,
               left: '50%',
               transform: 'translateX(-50%)',
-              fontSize: 24,
-              fontWeight: 500,
+              fontSize: 32,
+              fontWeight: 600,
               color: '#ffffff',
-              letterSpacing: '0.05em',
-              textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+              letterSpacing: '0.08em',
+              textShadow: '0 3px 6px rgba(0, 0, 0, 0.3)',
             }}
           >
             ご招待
@@ -135,14 +135,14 @@ export async function GET(request: NextRequest) {
               {/* タイトル */}
               <h1
                 style={{
-                  fontSize: 48,
-                  fontWeight: 400,
+                  fontSize: 52,
+                  fontWeight: 500,
                   textAlign: 'center',
                   color: '#ffffff',
-                  letterSpacing: '0.02em',
+                  letterSpacing: '0.03em',
                   lineHeight: 1.3,
-                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                  padding: '0 40px',
+                  textShadow: '0 3px 10px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2)',
+                  padding: '0 50px',
                   zIndex: 1,
                 }}
               >
@@ -153,12 +153,12 @@ export async function GET(request: NextRequest) {
             {/* リボンの結び目（下） */}
             <div
               style={{
-                width: 60,
-                height: 30,
+                width: 80,
+                height: 40,
                 background: 'linear-gradient(135deg, #ff5252 0%, #ff3838 100%)',
-                borderRadius: '0 0 30px 30px',
-                marginTop: -4,
-                boxShadow: '0 4px 8px rgba(255, 82, 82, 0.3)',
+                borderRadius: '0 0 40px 40px',
+                marginTop: -5,
+                boxShadow: '0 6px 12px rgba(255, 82, 82, 0.4)',
               }}
             />
           </div>
@@ -169,32 +169,34 @@ export async function GET(request: NextRequest) {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 12,
+              gap: 8,
               marginTop: 20,
             }}
           >
             <p
               style={{
-                fontSize: 32,
-                fontWeight: 300,
-                color: '#8b4513',
+                fontSize: 36,
+                fontWeight: 500,
+                color: '#d2691e',
                 textAlign: 'center',
                 letterSpacing: '0.02em',
-                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+                textShadow: '0 2px 4px rgba(255, 255, 255, 0.9)',
+                marginBottom: 4,
               }}
             >
-              きもちスライダーで
+              イベントのご招待です
             </p>
             <p
               style={{
                 fontSize: 28,
                 fontWeight: 300,
-                color: '#a0522d',
+                color: '#8b4513',
                 textAlign: 'center',
                 letterSpacing: '0.01em',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
               }}
             >
-              気持ちを共有しましょう
+              きもちスライダーで気持ちを共有しましょう
             </p>
           </div>
         </div>
