@@ -46,8 +46,25 @@ export default function HomePage() {
   const handleGoogleLogin = async () => {
     try {
       // 本番環境では環境変数を使用、開発環境ではwindow.location.originを使用
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      // 環境変数が設定されていない場合、現在のURLのoriginを使用
+      let appUrl = process.env.NEXT_PUBLIC_APP_URL
+      
+      // クライアントサイドで環境変数が読み込まれていない場合のフォールバック
+      if (!appUrl || appUrl === 'undefined' || appUrl.includes('localhost')) {
+        // 本番環境かどうかを判定（localhost以外のURLの場合）
+        if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+          // 本番環境の場合、現在のoriginを使用
+          appUrl = window.location.origin
+        } else {
+          // 開発環境の場合
+          appUrl = window.location.origin
+        }
+      }
+      
       const redirectUrl = `${appUrl}/auth/callback`
+      
+      console.log('Google Login - App URL:', appUrl)
+      console.log('Google Login - Redirect URL:', redirectUrl)
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
