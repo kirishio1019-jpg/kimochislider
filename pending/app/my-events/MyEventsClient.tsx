@@ -28,16 +28,29 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
     const fetchStats = async () => {
       const eventsWithResponseCounts = await Promise.all(
         events.map(async (event) => {
-          const { count } = await supabase
+          // ユニークなユーザーの回答数を取得
+          const { data: responses } = await supabase
             .from('responses')
-            .select('*', { count: 'exact', head: true })
+            .select('user_id')
             .eq('event_id', event.id)
           
-          const responseCount: number = typeof count === 'number' ? count : 0
+          let uniqueCount = 0
+          if (responses) {
+            const userIds = new Set<string>()
+            for (const response of responses) {
+              if (response.user_id) {
+                userIds.add(response.user_id)
+              } else {
+                // 匿名ユーザーは各レコードを1つとしてカウント
+                uniqueCount++
+              }
+            }
+            uniqueCount += userIds.size
+          }
           
           return {
             ...event,
-            responseCount,
+            responseCount: uniqueCount,
           }
         })
       )

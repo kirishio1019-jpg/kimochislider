@@ -92,6 +92,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
           const response = await fetch(`/api/responses/${event.id}`)
           if (response.ok) {
             const data = await response.json()
+            // APIは既にユニークなユーザーの最新の回答のみを返す
             // 自分の回答を除外（xValue, yValueが一致するもの）
             const filtered = (data.data || []).filter(
               (r: OtherResponse) => !(r.x_value === xValue && r.y_value === yValue)

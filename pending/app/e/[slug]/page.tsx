@@ -20,14 +20,30 @@ export default async function EventPage({ params }: PageProps) {
     notFound()
   }
 
-  // 回答数を取得
-  const { count, error: countError } = await supabase
+  // ユニークなユーザーの回答数を取得
+  // user_idがNULLでない場合はユニークなuser_idの数をカウント
+  // user_idがNULLの場合は各レコードを1つとしてカウント
+  const { data: responses, error: countError } = await supabase
     .from('responses')
-    .select('*', { count: 'exact', head: true })
+    .select('user_id')
     .eq('event_id', event.id)
 
-  // デバッグ: countの値を確認
-  console.log('Server: response count for event', event.id, ':', count)
+  let uniqueCount = 0
+  if (responses) {
+    const userIds = new Set<string>()
+    for (const response of responses) {
+      if (response.user_id) {
+        userIds.add(response.user_id)
+      } else {
+        // 匿名ユーザーは各レコードを1つとしてカウント
+        uniqueCount++
+      }
+    }
+    uniqueCount += userIds.size
+  }
 
-  return <EventPageClient event={event} responseCount={count ?? 0} />
+  // デバッグ: countの値を確認
+  console.log('Server: unique response count for event', event.id, ':', uniqueCount)
+
+  return <EventPageClient event={event} responseCount={uniqueCount} />
 }

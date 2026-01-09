@@ -40,23 +40,56 @@ export async function GET(
       return NextResponse.json({ data: data || [] })
     }
 
-    // user_idが指定されていない場合、x_valueとy_valueが存在する回答のみ取得（マトリクス表示用）
-    const { data, error } = await supabase
+    // user_idが指定されていない場合、ユニークなユーザーの最新の回答のみ取得
+    // まず、すべての回答を取得
+    const { data: allResponses, error: fetchError } = await supabase
       .from('responses')
-      .select('x_value, y_value')
+      .select('id, user_id, x_value, y_value, updated_at')
       .eq('event_id', event_id)
       .not('x_value', 'is', null)
       .not('y_value', 'is', null)
-      .order('created_at', { ascending: false })
+      .order('updated_at', { ascending: false })
 
-    if (error) {
+    if (fetchError) {
       return NextResponse.json(
-        { error: error.message },
+        { error: fetchError.message },
         { status: 500 }
       )
     }
 
-    return NextResponse.json({ data: data || [] })
+    if (!allResponses || allResponses.length === 0) {
+      return NextResponse.json({ data: [] })
+    }
+
+    // ユニークなユーザーの最新の回答のみを抽出
+    const uniqueUserResponses = new Map<string, { x_value: number; y_value: number }>()
+    
+    for (const response of allResponses) {
+      if (response.user_id) {
+        // ログインユーザー: user_idをキーとして、最新の回答のみを保持
+        if (!uniqueUserResponses.has(response.user_id)) {
+          uniqueUserResponses.set(response.user_id, {
+            x_value: response.x_value,
+            y_value: response.y_value,
+          })
+        }
+      } else {
+        // 匿名ユーザー: 各回答を個別にカウント（edit_tokenで識別できないため、すべて含める）
+        // ただし、重複を避けるためにidを使用
+        const key = `anonymous_${response.id}`
+        if (!uniqueUserResponses.has(key)) {
+          uniqueUserResponses.set(key, {
+            x_value: response.x_value,
+            y_value: response.y_value,
+          })
+        }
+      }
+    }
+
+    return NextResponse.json({ 
+      data: Array.from(uniqueUserResponses.values()),
+      count: uniqueUserResponses.size 
+    })
   } catch (error) {
     return NextResponse.json(
       { error: 'Internal server error' },
