@@ -29,6 +29,9 @@ interface EventManageClientProps {
     category: string
     email: string | null
     user_email: string | null // Googleアカウントのメールアドレス（統計用）
+    x_value: number
+    y_value: number
+    user_id: string | null
     created_at: string
     updated_at: string
   }>
@@ -450,32 +453,106 @@ export default function EventManageClient({
                 <CardTitle className="text-lg font-light tracking-wide text-foreground">統計</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-muted-foreground">回答人数</span>
-                    <span className="text-2xl font-light text-foreground">{stats.total}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-muted-foreground">平均スコア</span>
-                    <span className="text-xl font-light text-foreground">{stats.average_score.toFixed(1)}%</span>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-light text-muted-foreground">回答人数</span>
+                  <span className="text-2xl font-light text-foreground">{stats.total}</span>
                 </div>
 
-                {/* 参加可否の統計 */}
-                <div className="space-y-2 pt-4 border-t border-border/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-muted-foreground">行ける</span>
-                    <span className="text-lg font-light text-foreground">{stats.availability_counts.can}人</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-muted-foreground">行けない</span>
-                    <span className="text-lg font-light text-foreground">{stats.availability_counts.cannot}人</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-light text-muted-foreground">未定</span>
-                    <span className="text-lg font-light text-foreground">{stats.availability_counts.later}人</span>
-                  </div>
-                </div>
+                {/* マトリクス表示 */}
+                {(() => {
+                  // ユニークなユーザーの最新の回答のみを取得
+                  const userLatestResponses = new Map<string, { x_value: number; y_value: number }>()
+                  
+                  // updated_atでソート（最新のものが先頭）
+                  const sortedResponses = [...responses].sort((a, b) => {
+                    const aTime = new Date(a.updated_at || a.created_at).getTime()
+                    const bTime = new Date(b.updated_at || b.created_at).getTime()
+                    return bTime - aTime
+                  })
+
+                  for (const response of sortedResponses) {
+                    const userId = response.user_id
+                    if (userId) {
+                      // ログインユーザー: user_idをキーとして、最新の回答のみを保持
+                      if (!userLatestResponses.has(userId)) {
+                        userLatestResponses.set(userId, { 
+                          x_value: response.x_value || 0, 
+                          y_value: response.y_value || 50 
+                        })
+                      }
+                    } else {
+                      // 匿名ユーザー: 各回答を個別にカウント
+                      const key = `anonymous_${response.id}`
+                      if (!userLatestResponses.has(key)) {
+                        userLatestResponses.set(key, { 
+                          x_value: response.x_value || 0, 
+                          y_value: response.y_value || 50 
+                        })
+                      }
+                    }
+                  }
+
+                  const matrixData = Array.from(userLatestResponses.values())
+                  const matrixSize = 200 // マトリクスのサイズ（px）
+
+                  return (
+                    <div className="space-y-3 pt-4 border-t border-border/50">
+                      <div className="text-sm font-light text-muted-foreground text-center">
+                        参加者の位置
+                      </div>
+                      <div className="relative" style={{ width: matrixSize, height: matrixSize, margin: '0 auto' }}>
+                        {/* 背景グリッド */}
+                        <svg width={matrixSize} height={matrixSize} className="absolute inset-0">
+                          {/* グリッド線 */}
+                          {[0, 25, 50, 75, 100].map((val) => (
+                            <g key={val}>
+                              <line
+                                x1={(val / 100) * matrixSize}
+                                y1={0}
+                                x2={(val / 100) * matrixSize}
+                                y2={matrixSize}
+                                stroke="currentColor"
+                                strokeWidth={0.5}
+                                className="text-border/30"
+                              />
+                              <line
+                                x1={0}
+                                y1={(val / 100) * matrixSize}
+                                x2={matrixSize}
+                                y2={(val / 100) * matrixSize}
+                                stroke="currentColor"
+                                strokeWidth={0.5}
+                                className="text-border/30"
+                              />
+                            </g>
+                          ))}
+                        </svg>
+                        {/* データポイント */}
+                        <svg width={matrixSize} height={matrixSize} className="relative z-10">
+                          {matrixData.map((point, idx) => (
+                            <circle
+                              key={idx}
+                              cx={(point.x_value / 100) * matrixSize}
+                              cy={matrixSize - (point.y_value / 100) * matrixSize}
+                              r={4}
+                              fill="currentColor"
+                              className="text-primary"
+                            />
+                          ))}
+                        </svg>
+                        {/* 軸ラベル */}
+                        <div className="absolute -left-12 top-0 bottom-0 flex flex-col justify-between text-xs text-muted-foreground font-light py-2">
+                          <span>行けそう</span>
+                          <span>行けなそう</span>
+                        </div>
+                        <div className="absolute -bottom-6 left-0 right-0 flex justify-between text-xs text-muted-foreground font-light px-2">
+                          <span>興味なし</span>
+                          <span>興味あり</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
 
                 {/* Googleアカウントのメールアドレス一覧 */}
                 {(() => {

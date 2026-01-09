@@ -120,22 +120,10 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
       alert('興味の度合いを選択してください。')
       return
     }
-    
-    // バリデーション: 参加の可否が必須
-    if (availabilityStatus === null) {
-      alert('参加の可否を選択してください。')
-      return
-    }
 
     setIsSubmitting(true)
 
     const token = generateToken()
-
-    // 三択の状態をyValueに変換（後方互換性のため）
-    let calculatedYValue = 50 // デフォルト
-    if (availabilityStatus === "can") calculatedYValue = 100
-    else if (availabilityStatus === "cannot") calculatedYValue = 0
-    else if (availabilityStatus === "later") calculatedYValue = 50
 
     const response = await fetch('/api/responses', {
       method: 'POST',
@@ -146,7 +134,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
         edit_token: token,
         is_confirmed: isConfirmed,
         x_value: xValue,
-        y_value: calculatedYValue,
+        y_value: yValue,
         user_id: userId, // Googleアカウントでログインしている場合はuser_idを送信
       }),
     })

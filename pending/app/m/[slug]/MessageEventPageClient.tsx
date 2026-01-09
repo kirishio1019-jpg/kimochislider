@@ -130,20 +130,10 @@ export default function MessageEventPageClient({ event, responseCount }: Message
       alert('興味の度合いを選択してください。')
       return
     }
-    
-    if (availabilityStatus === null) {
-      alert('参加の可否を選択してください。')
-      return
-    }
 
     setIsSubmitting(true)
 
     const token = generateToken()
-
-    let calculatedYValue = 50
-    if (availabilityStatus === "can") calculatedYValue = 100
-    else if (availabilityStatus === "cannot") calculatedYValue = 0
-    else if (availabilityStatus === "later") calculatedYValue = 50
 
     const response = await fetch('/api/responses', {
       method: 'POST',
@@ -154,7 +144,7 @@ export default function MessageEventPageClient({ event, responseCount }: Message
         edit_token: token,
         is_confirmed: isConfirmed,
         x_value: xValue,
-        y_value: calculatedYValue,
+        y_value: yValue,
         user_id: userId,
       }),
     })
