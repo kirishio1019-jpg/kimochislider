@@ -79,6 +79,8 @@ export default function HomePage() {
         // より詳細なエラーメッセージを表示
         if (error.message.includes('OAuth secret') || error.message.includes('provider')) {
           alert('Google認証が設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → Providers → Google を有効化\n2. Client ID と Client Secret を入力\n\n詳細は GOOGLE_AUTH_SETUP.md を参照してください。')
+        } else if (error.message.includes('404') || error.message.includes('NOT_FOUND')) {
+          alert(`リダイレクトURLが設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → URL Configuration を開く\n2. Redirect URLs に以下を追加：\n   ${redirectUrl}\n3. Site URL を設定：\n   ${appUrl}\n\n詳細は SUPABASE_REDIRECT_URL_QUICK_FIX.md を参照してください。`)
         } else {
           alert('ログインに失敗しました: ' + error.message)
         }
