@@ -440,19 +440,34 @@ export function FeelingSlider({
                   </div>
                 </div>
 
-                {/* コーナーラベル */}
-                <div className="absolute inset-0 pointer-events-none p-3">
-                  <div className="absolute top-2 right-2 text-xs font-light text-primary/80 bg-background/60 backdrop-blur-sm px-2 py-1 rounded-md">
-                    興味あり<br />行けそう
+                {/* 軸ラベル */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* 縦軸ラベル（タテ軸） */}
+                  <div className="absolute left-0 top-0 h-full flex flex-col justify-between items-start" style={{ 
+                    left: `${matrixMargin / 2}%`,
+                    top: `${matrixMargin}%`,
+                    height: `${100 - 2 * matrixMargin}%`
+                  }}>
+                    <div className="text-xs font-medium text-primary/80 bg-background/60 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                      行けそう
+                    </div>
+                    <div className="text-xs font-medium text-muted-foreground/70 bg-background/60 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                      行けなそう
+                    </div>
                   </div>
-                  <div className="absolute top-2 left-2 text-xs font-light text-muted-foreground/70 bg-background/60 backdrop-blur-sm px-2 py-1 rounded-md">
-                    興味なし<br />行けそう
-                  </div>
-                  <div className="absolute bottom-2 right-2 text-xs font-light text-muted-foreground/70 bg-background/60 backdrop-blur-sm px-2 py-1 rounded-md">
-                    興味あり<br />行けなそう
-                  </div>
-                  <div className="absolute bottom-2 left-2 text-xs font-light text-muted-foreground/70 bg-background/60 backdrop-blur-sm px-2 py-1 rounded-md">
-                    興味なし<br />行けなそう
+
+                  {/* 横軸ラベル（ヨコ軸） */}
+                  <div className="absolute bottom-0 left-0 w-full flex justify-between items-end" style={{ 
+                    left: `${matrixMargin}%`,
+                    bottom: `${matrixMargin / 2}%`,
+                    width: `${100 - 2 * matrixMargin}%`
+                  }}>
+                    <div className="text-xs font-medium text-muted-foreground/70 bg-background/60 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                      興味なし
+                    </div>
+                    <div className="text-xs font-medium text-primary/80 bg-background/60 backdrop-blur-sm px-1.5 py-0.5 rounded">
+                      興味あり
+                    </div>
                   </div>
                 </div>
               </div>
