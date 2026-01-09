@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, TrendingUp, Mail, Copy, Check, Download, ArrowLeft, Calendar, MapPin, DollarSign, User, Edit2, Save, X } from "lucide-react"
 import type { Event } from "@/types"
 import { SCORE_CATEGORIES, getScoreCategory } from "@/types"
+import { getAppUrl } from "@/lib/utils"
 
 interface EventManageClientProps {
   event: Event
@@ -57,8 +58,7 @@ export default function EventManageClient({
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // 本番環境では環境変数を使用、開発環境ではwindow.location.originを使用
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      const appUrl = getAppUrl()
       setOrigin(appUrl)
     }
   }, [])

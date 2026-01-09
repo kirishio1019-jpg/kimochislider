@@ -132,15 +132,16 @@ export async function POST(request: NextRequest) {
     }
 
     // リクエストのOriginを取得（クライアント側から呼ばれる場合）
-    const referer = request.headers.get('referer')
-    const origin = request.headers.get('origin') || 
-                   (referer ? new URL(referer).origin : null) ||
+    // 本番環境では環境変数を使用、開発環境ではリクエストヘッダーから取得
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
+                   request.headers.get('origin') ||
+                   (request.headers.get('referer') ? new URL(request.headers.get('referer')!).origin : null) ||
                    'http://localhost:3000'
     
     return NextResponse.json({
       data,
-      public_url: `${origin}/e/${slug}`,
-      admin_url: `${origin}/admin/${adminToken}/events/${data.id}`,
+      public_url: `${appUrl}/e/${slug}`,
+      admin_url: `${appUrl}/admin/${adminToken}/events/${data.id}`,
     })
   } catch (error) {
     console.error('API route error:', error)

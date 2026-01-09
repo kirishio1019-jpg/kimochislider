@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Copy, Check } from "lucide-react"
 import { useState } from "react"
+import { getAppUrl } from "@/lib/utils"
 
 function SuccessContent() {
   const searchParams = useSearchParams()
@@ -16,9 +17,10 @@ function SuccessContent() {
   const [copiedPublic, setCopiedPublic] = useState(false)
   const [copiedAdmin, setCopiedAdmin] = useState(false)
 
-  const publicUrl = `${window.location.origin}/e/${slug}`
-  const embedUrl = `${window.location.origin}/embed/${slug}`
-  const adminUrl = `${window.location.origin}/admin/${adminToken}/events/${eventId}`
+  const appUrl = getAppUrl()
+  const publicUrl = `${appUrl}/e/${slug}`
+  const embedUrl = `${appUrl}/embed/${slug}`
+  const adminUrl = `${appUrl}/admin/${adminToken}/events/${eventId}`
 
   const copyToClipboard = (text: string, setFunc: (val: boolean) => void) => {
     navigator.clipboard.writeText(text)

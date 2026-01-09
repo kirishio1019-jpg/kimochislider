@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FeelingSlider } from "@/components/feeling-slider"
 import { Copy, Check } from "lucide-react"
-import { generateToken } from "@/lib/utils"
+import { generateToken, getAppUrl } from "@/lib/utils"
 import type { Event } from "@/types"
 
 interface EventPageClientProps {
@@ -130,7 +130,8 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
     })
 
     if (response.ok) {
-      const link = `${window.location.origin}/r/${token}`
+      const appUrl = getAppUrl()
+      const link = `${appUrl}/r/${token}`
       setEditLink(link)
       // 送信後にマトリクスを表示
       setShowMatrix(true)

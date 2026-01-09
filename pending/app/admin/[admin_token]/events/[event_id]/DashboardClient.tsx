@@ -7,6 +7,7 @@ import { Users, TrendingUp, Mail, Copy, Check, Download, Settings } from "lucide
 import { useRouter } from "next/navigation"
 import type { Event } from "@/types"
 import { SCORE_CATEGORIES, getScoreCategory } from "@/types"
+import { getAppUrl } from "@/lib/utils"
 
 interface DashboardClientProps {
   event: Event
@@ -45,7 +46,7 @@ export default function DashboardClient({
   // クライアントサイドでのみoriginを取得
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin)
+      setOrigin(getAppUrl())
     }
   }, [])
 

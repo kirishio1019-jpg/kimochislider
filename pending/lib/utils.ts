@@ -37,3 +37,21 @@ export function generateSlug(title: string): string {
   
   return `${base}-${timestamp}-${random}`
 }
+
+// アプリのベースURLを取得（クライアントサイド用）
+// 本番環境では環境変数を使用、開発環境ではwindow.location.originを使用
+export function getAppUrl(): string {
+  if (typeof window === 'undefined') {
+    // サーバーサイドの場合
+    return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  }
+  
+  // クライアントサイドの場合
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (envUrl && envUrl !== 'undefined' && !envUrl.includes('localhost')) {
+    return envUrl
+  }
+  
+  // 環境変数が設定されていない、またはlocalhostの場合は現在のoriginを使用
+  return window.location.origin
+}
