@@ -106,13 +106,13 @@ export function FeelingSlider({
     }
   }, [onAvailabilityChange, onYChange])
 
-  // マトリクスクリック/ドラッグハンドラー
-  const handleMatrixInteraction = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  // マトリクスクリック/ドラッグハンドラー（マウスとタッチの両方に対応）
+  const handleMatrixInteraction = useCallback((clientX: number, clientY: number) => {
     if (disabled || !containerRef.current) return
 
     const rect = containerRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
+    const x = clientX - rect.left
+    const y = clientY - rect.top
     
     // 横軸: 左=0, 右=100 (興味なし→興味あり)
     const newX = Math.max(0, Math.min(100, Math.round((x / rect.width) * 100)))
@@ -137,12 +137,31 @@ export function FeelingSlider({
   }, [disabled, calculateScore, onChange, onXChange, onYChange])
 
   const handleMatrixClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    handleMatrixInteraction(e)
+    handleMatrixInteraction(e.clientX, e.clientY)
   }, [handleMatrixInteraction])
+
+  const handleMatrixTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (disabled) return
+    e.preventDefault()
+    setIsDragging(true)
+    const touch = e.touches[0]
+    if (touch) {
+      handleMatrixInteraction(touch.clientX, touch.clientY)
+    }
+  }, [disabled, handleMatrixInteraction])
+
+  const handleMatrixTouchMove = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (disabled || !isDragging) return
+    e.preventDefault()
+    const touch = e.touches[0]
+    if (touch) {
+      handleMatrixInteraction(touch.clientX, touch.clientY)
+    }
+  }, [disabled, isDragging, handleMatrixInteraction])
 
   const handleMatrixDrag = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (disabled || !isDragging) return
-    handleMatrixInteraction(e)
+    handleMatrixInteraction(e.clientX, e.clientY)
   }, [disabled, isDragging, handleMatrixInteraction])
 
   const handleMouseDown = useCallback(() => {
@@ -153,35 +172,71 @@ export function FeelingSlider({
   useEffect(() => {
     const handleMouseUp = () => setIsDragging(false)
     const handleMouseLeave = () => setIsDragging(false)
+    const handleTouchEnd = () => setIsDragging(false)
     
     if (isDragging) {
       window.addEventListener('mouseup', handleMouseUp)
       window.addEventListener('mouseleave', handleMouseLeave)
+      window.addEventListener('touchend', handleTouchEnd)
+      window.addEventListener('touchcancel', handleTouchEnd)
       return () => {
         window.removeEventListener('mouseup', handleMouseUp)
         window.removeEventListener('mouseleave', handleMouseLeave)
+        window.removeEventListener('touchend', handleTouchEnd)
+        window.removeEventListener('touchcancel', handleTouchEnd)
       }
     }
   }, [isDragging])
 
-  // スライダーのドラッグハンドラー
+  // スライダーのドラッグハンドラー（マウスとタッチの両方に対応）
   const handleSliderMouseDown = useCallback((e: React.MouseEvent) => {
     if (disabled) return
     e.preventDefault()
     setIsSliderDragging(true)
   }, [disabled])
 
-  const handleSliderMouseMove = useCallback((e: MouseEvent) => {
+  const handleSliderTouchStart = useCallback((e: React.TouchEvent) => {
+    if (disabled) return
+    e.preventDefault()
+    setIsSliderDragging(true)
+    const touch = e.touches[0]
+    if (touch && sliderRef.current) {
+      const rect = sliderRef.current.getBoundingClientRect()
+      const x = touch.clientX - rect.left
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+      const newValue = Math.round(percentage)
+      handleXChange(newValue)
+    }
+  }, [disabled, handleXChange])
+
+  const handleSliderMove = useCallback((clientX: number) => {
     if (!isSliderDragging || !sliderRef.current || disabled) return
     
     const rect = sliderRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
+    const x = clientX - rect.left
     const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
     const newValue = Math.round(percentage)
     handleXChange(newValue)
   }, [isSliderDragging, disabled, handleXChange])
 
+  const handleSliderMouseMove = useCallback((e: MouseEvent) => {
+    handleSliderMove(e.clientX)
+  }, [handleSliderMove])
+
+  const handleSliderTouchMove = useCallback((e: TouchEvent) => {
+    if (!isSliderDragging || disabled) return
+    e.preventDefault()
+    const touch = e.touches[0]
+    if (touch) {
+      handleSliderMove(touch.clientX)
+    }
+  }, [isSliderDragging, disabled, handleSliderMove])
+
   const handleSliderMouseUp = useCallback(() => {
+    setIsSliderDragging(false)
+  }, [])
+
+  const handleSliderTouchEnd = useCallback(() => {
     setIsSliderDragging(false)
   }, [])
 
@@ -189,12 +244,18 @@ export function FeelingSlider({
     if (isSliderDragging) {
       window.addEventListener('mousemove', handleSliderMouseMove)
       window.addEventListener('mouseup', handleSliderMouseUp)
+      window.addEventListener('touchmove', handleSliderTouchMove, { passive: false })
+      window.addEventListener('touchend', handleSliderTouchEnd)
+      window.addEventListener('touchcancel', handleSliderTouchEnd)
       return () => {
         window.removeEventListener('mousemove', handleSliderMouseMove)
         window.removeEventListener('mouseup', handleSliderMouseUp)
+        window.removeEventListener('touchmove', handleSliderTouchMove)
+        window.removeEventListener('touchend', handleSliderTouchEnd)
+        window.removeEventListener('touchcancel', handleSliderTouchEnd)
       }
     }
-  }, [isSliderDragging, handleSliderMouseMove, handleSliderMouseUp])
+  }, [isSliderDragging, handleSliderMouseMove, handleSliderMouseUp, handleSliderTouchMove, handleSliderTouchEnd])
 
   // マトリクス内のドットの位置計算
   const dotLeft = `${xValue}%`
@@ -209,10 +270,12 @@ export function FeelingSlider({
             <div className="relative w-full max-w-md">
               <div
                 ref={containerRef}
-                className="relative aspect-square w-full cursor-crosshair rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-muted/40 via-primary/15 to-primary/30 backdrop-blur-sm shadow-lg overflow-hidden"
+                className="relative aspect-square w-full cursor-crosshair rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-muted/40 via-primary/15 to-primary/30 backdrop-blur-sm shadow-lg overflow-hidden touch-none"
                 onClick={handleMatrixClick}
                 onMouseMove={handleMatrixDrag}
                 onMouseDown={handleMouseDown}
+                onTouchStart={handleMatrixTouchStart}
+                onTouchMove={handleMatrixTouchMove}
                 style={{
                   background: `
                     radial-gradient(circle at ${dotLeft} ${dotTop}, oklch(var(--primary) / 0.2) 0%, transparent 20%),
@@ -366,8 +429,9 @@ export function FeelingSlider({
               />
               {/* カスタムハンドル（ドラッグ可能） */}
               <div
-                className="absolute rounded-full cursor-grab active:cursor-grabbing transition-all duration-150 select-none"
+                className="absolute rounded-full cursor-grab active:cursor-grabbing transition-all duration-150 select-none touch-none"
                 onMouseDown={handleSliderMouseDown}
+                onTouchStart={handleSliderTouchStart}
                 style={{
                   left: `clamp(0px, calc(${xValue}% - 10px), calc(100% - 20px))`,
                   top: '50%',
