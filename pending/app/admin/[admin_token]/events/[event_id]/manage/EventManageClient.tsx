@@ -139,6 +139,7 @@ export default function EventManageClient({
                       fee_text: event.fee_text || '',
                       organizer_name: event.organizer_name || '',
                       additional_info: event.additional_info || '',
+                      public_page_content: event.public_page_content || '',
                     })
                   }}
                   className="gap-2 font-light"
