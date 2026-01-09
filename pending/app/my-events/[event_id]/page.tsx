@@ -77,6 +77,7 @@ export default async function MyEventManagePage({ params }: PageProps) {
       score: r.score,
       category: getScoreCategory(r.score),
       email: r.email,
+      user_email: (r as any).user_email || null, // Googleアカウントのメールアドレス（統計用）
       created_at: r.created_at,
       updated_at: r.updated_at,
     })) || [],

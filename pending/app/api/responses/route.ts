@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
     // ユーザー認証を確認
     const { data: { user } } = await supabase.auth.getUser()
     const finalUserId = user_id || user?.id || null
+    // Googleアカウントのメールアドレスを取得（統計用）
+    const userEmail = user?.email || null
 
     // x_valueとy_valueが提供されている場合はそれを使用、そうでなければscoreから逆算
     const finalXValue = x_value !== undefined 
@@ -35,6 +37,7 @@ export async function POST(request: NextRequest) {
       x_value: finalXValue,
       y_value: finalYValue,
       user_id: finalUserId,
+      user_email: userEmail, // Googleアカウントのメールアドレス（統計用）
       updated_at: new Date().toISOString(),
     }
 

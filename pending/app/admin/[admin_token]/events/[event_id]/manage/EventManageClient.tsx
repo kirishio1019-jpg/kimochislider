@@ -23,6 +23,7 @@ interface EventManageClientProps {
     score: number
     category: string
     email: string | null
+    user_email: string | null // Googleアカウントのメールアドレス（統計用）
     created_at: string
     updated_at: string
   }>
@@ -54,6 +55,7 @@ export default function EventManageClient({
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
   const [copiedLink, setCopiedLink] = useState(false)
   const [copiedMessageLink, setCopiedMessageLink] = useState(false)
+  const [copiedEmails, setCopiedEmails] = useState(false)
   const [origin, setOrigin] = useState<string>('')
 
   useEffect(() => {
@@ -453,6 +455,59 @@ export default function EventManageClient({
                     <span className="text-xl font-light text-foreground">{stats.average_score.toFixed(1)}%</span>
                   </div>
                 </div>
+
+                {/* Googleアカウントのメールアドレス一覧 */}
+                {(() => {
+                  const userEmails = responses
+                    .filter((r) => r.user_email)
+                    .map((r) => r.user_email)
+                    .filter((email): email is string => email !== null)
+                  
+                  if (userEmails.length === 0) {
+                    return null
+                  }
+
+                  return (
+                    <div className="space-y-3 pt-4 border-t border-border/50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Mail className="size-4 text-primary" strokeWidth={1.5} />
+                          <span className="text-sm font-light text-foreground">
+                            Googleアカウントのメールアドレス ({userEmails.length}件)
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => copyToClipboard(userEmails.join(", "), setCopiedEmails)}
+                          className="h-8 gap-1.5 font-light text-xs"
+                        >
+                          {copiedEmails ? (
+                            <>
+                              <Check className="size-3" strokeWidth={1.5} />
+                              <span>コピー済み</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="size-3" strokeWidth={1.5} />
+                              <span>コピー</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto space-y-1">
+                        {userEmails.map((email, index) => (
+                          <div
+                            key={index}
+                            className="text-xs font-light text-muted-foreground px-2 py-1 rounded bg-muted/30"
+                          >
+                            {email}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
               </CardContent>
             </Card>
 
