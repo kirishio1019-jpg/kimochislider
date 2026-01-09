@@ -57,7 +57,9 @@ export default function EventManageClient({
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin)
+      // 本番環境では環境変数を使用、開発環境ではwindow.location.originを使用
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      setOrigin(appUrl)
     }
   }, [])
 

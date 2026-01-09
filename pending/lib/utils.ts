@@ -18,12 +18,22 @@ export function generateToken(length: number = 32): string {
 }
 
 // スラッグを生成（URL用）
+// イベントごとに毎回異なるURLを生成するため、タイムスタンプとランダム文字列を使用
 export function generateSlug(title: string): string {
   const base = title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .substring(0, 40)
-  const random = Math.random().toString(36).substring(2, 8)
-  return `${base}-${random}`
+    .substring(0, 30)
+  
+  // タイムスタンプ（ミリ秒）の下6桁とランダム文字列を組み合わせて一意性を確保
+  const timestamp = Date.now().toString(36).slice(-6)
+  const random = Math.random().toString(36).substring(2, 10)
+  
+  // baseが空の場合はランダム文字列のみを使用
+  if (!base) {
+    return `event-${timestamp}-${random}`
+  }
+  
+  return `${base}-${timestamp}-${random}`
 }
