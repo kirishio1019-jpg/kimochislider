@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
-import EventPageClient from '../../e/[slug]/EventPageClient'
+import MessageEventPageClient from './MessageEventPageClient'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -74,5 +74,5 @@ export default async function MessageEventPage({ params }: PageProps) {
     .select('*', { count: 'exact', head: true })
     .eq('event_id', event.id)
 
-  return <EventPageClient event={event} responseCount={count ?? 0} />
+  return <MessageEventPageClient event={event} responseCount={count ?? 0} />
 }

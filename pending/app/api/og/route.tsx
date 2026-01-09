@@ -19,155 +19,183 @@ export async function GET(request: NextRequest) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(to bottom, #fef7f0, #fef5ed)',
+            background: 'linear-gradient(135deg, #fff5e6 0%, #ffe8cc 50%, #ffd9a3 100%)',
             fontFamily: 'serif',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          {/* タイトル */}
+          {/* 装飾的な背景要素 */}
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px 80px',
-              width: '100%',
+              position: 'absolute',
+              top: -100,
+              right: -100,
+              width: 400,
+              height: 400,
+              borderRadius: '50%',
+              background: 'rgba(255, 200, 100, 0.2)',
+              filter: 'blur(60px)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -150,
+              left: -150,
+              width: 500,
+              height: 500,
+              borderRadius: '50%',
+              background: 'rgba(255, 180, 80, 0.15)',
+              filter: 'blur(80px)',
+            }}
+          />
+
+          {/* リボン装飾（上部） */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 200,
+              height: 80,
+              background: 'linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%)',
+              clipPath: 'polygon(0 0, 100% 0, 85% 100%, 15% 100%)',
+              boxShadow: '0 4px 12px rgba(255, 107, 107, 0.3)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: 20,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: 24,
+              fontWeight: 500,
+              color: '#ffffff',
+              letterSpacing: '0.05em',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
             }}
           >
-            <h1
-              style={{
-                fontSize: 64,
-                fontWeight: 300,
-                textAlign: 'center',
-                color: '#2d1810',
-                marginBottom: 20,
-                letterSpacing: '0.02em',
-                lineHeight: 1.2,
-              }}
-            >
-              {title}
-            </h1>
+            ご招待
           </div>
 
-          {/* スライダーコンポーネント */}
+          {/* プレゼントボックス */}
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 40,
-              width: '80%',
-              maxWidth: 800,
+              marginTop: 60,
+              marginBottom: 40,
             }}
           >
-            {/* 現在の気持ち表示 */}
+            {/* ボックス本体 */}
             <div
               style={{
+                width: 320,
+                height: 200,
+                background: 'linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%)',
+                borderRadius: 16,
+                boxShadow: '0 8px 24px rgba(255, 107, 107, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '30px 60px',
-                borderRadius: 24,
-                border: '3px solid rgba(82, 45, 20, 0.3)',
-                background: 'linear-gradient(to bottom right, rgba(82, 45, 20, 0.1), rgba(82, 45, 20, 0.05))',
-                minHeight: 100,
-                width: '100%',
+                position: 'relative',
+                border: '4px solid rgba(255, 255, 255, 0.3)',
               }}
             >
-              <p
+              {/* リボン（横） */}
+              <div
                 style={{
-                  fontSize: 36,
-                  fontWeight: 300,
-                  color: '#522d14',
+                  position: 'absolute',
+                  top: '50%',
+                  left: 0,
+                  right: 0,
+                  height: 40,
+                  background: 'rgba(255, 255, 255, 0.4)',
+                  transform: 'translateY(-50%)',
+                }}
+              />
+              {/* リボン（縦） */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: 0,
+                  bottom: 0,
+                  width: 40,
+                  background: 'rgba(255, 255, 255, 0.4)',
+                  transform: 'translateX(-50%)',
+                }}
+              />
+              
+              {/* タイトル */}
+              <h1
+                style={{
+                  fontSize: 48,
+                  fontWeight: 400,
                   textAlign: 'center',
+                  color: '#ffffff',
                   letterSpacing: '0.02em',
+                  lineHeight: 1.3,
+                  textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  padding: '0 40px',
+                  zIndex: 1,
                 }}
               >
-                半々
-              </p>
+                {title}
+              </h1>
             </div>
 
-            {/* スライダーバー */}
+            {/* リボンの結び目（下） */}
             <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 20,
-                width: '100%',
+                width: 60,
+                height: 30,
+                background: 'linear-gradient(135deg, #ff5252 0%, #ff3838 100%)',
+                borderRadius: '0 0 30px 30px',
+                marginTop: -4,
+                boxShadow: '0 4px 8px rgba(255, 82, 82, 0.3)',
               }}
-            >
-              {/* スライダートラック */}
-              <div
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: 12,
-                  borderRadius: 6,
-                  background: 'linear-gradient(to right, #e8e0d8 0%, rgba(82, 45, 20, 0.3) 50%, #522d14 100%)',
-                }}
-              >
-                {/* スライダーつまみ */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: '50%',
-                    top: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: '#522d14',
-                    border: '3px solid #fef7f0',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-                  }}
-                />
-              </div>
+            />
+          </div>
 
-              {/* ラベル */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  fontSize: 24,
-                  fontWeight: 300,
-                  color: '#522d14',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <span>まだ迷う</span>
-                  <span style={{ fontSize: 18, color: '#8b6f47', opacity: 0.7 }}>今は行けなさそう</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-                  <span>けっこう行きたい</span>
-                  <span style={{ fontSize: 18, color: '#8b6f47', opacity: 0.7 }}>かなり前向き</span>
-                </div>
-              </div>
-            </div>
-
-            {/* CTAテキスト */}
-            <div
+          {/* サブテキスト */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 12,
+              marginTop: 20,
+            }}
+          >
+            <p
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: 20,
+                fontSize: 32,
+                fontWeight: 300,
+                color: '#8b4513',
+                textAlign: 'center',
+                letterSpacing: '0.02em',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
               }}
             >
-              <p
-                style={{
-                  fontSize: 28,
-                  fontWeight: 300,
-                  color: '#522d14',
-                  textAlign: 'center',
-                  letterSpacing: '0.01em',
-                }}
-              >
-                タップしてスライダーで気持ちを入力
-              </p>
-            </div>
+              きもちスライダーで
+            </p>
+            <p
+              style={{
+                fontSize: 28,
+                fontWeight: 300,
+                color: '#a0522d',
+                textAlign: 'center',
+                letterSpacing: '0.01em',
+              }}
+            >
+              気持ちを共有しましょう
+            </p>
           </div>
         </div>
       ),
