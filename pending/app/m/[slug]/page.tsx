@@ -44,14 +44,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     metadataBase: new URL(appUrl),
-    title: `${event.title} - イベントのご招待です`,
+    title: `イベントへのご招待: ${event.title}`,
     description: 'イベントのご招待です。きもちスライダーで気持ちを共有しましょう',
     openGraph: {
       type: 'website',
       locale: 'ja_JP',
       url: pageUrl,
       siteName: 'きもちスライダー',
-      title: `${event.title} - イベントのご招待です`,
+      title: `イベントへのご招待: ${event.title}`,
       description: 'イベントのご招待です。きもちスライダーで気持ちを共有しましょう',
       images: [
         {
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${event.title} - イベントのご招待です`,
+      title: `イベントへのご招待: ${event.title}`,
       description: 'イベントのご招待です。きもちスライダーで気持ちを共有しましょう',
       images: [ogImageUrl],
     },
