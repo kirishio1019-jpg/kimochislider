@@ -51,23 +51,29 @@ export function getAppUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_APP_URL
   const currentOrigin = window.location.origin
   
-  // デバッグ用ログ（本番環境では削除可能）
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[getAppUrl] envUrl:', envUrl)
-    console.log('[getAppUrl] currentOrigin:', currentOrigin)
+  // デバッグ用ログ（常に表示）
+  console.log('[getAppUrl] envUrl:', envUrl)
+  console.log('[getAppUrl] currentOrigin:', currentOrigin)
+  console.log('[getAppUrl] hostname:', window.location.hostname)
+  
+  // 本番環境かどうかを判定（localhostでない場合）
+  const isProduction = !window.location.hostname.includes('localhost') && 
+                       !window.location.hostname.includes('127.0.0.1')
+  
+  // 本番環境の場合、常にcurrentOriginを使用（本番URL）
+  if (isProduction) {
+    console.log('[getAppUrl] Production environment detected, using currentOrigin:', currentOrigin)
+    return currentOrigin
   }
   
+  // 開発環境の場合
   // 環境変数が設定されていて、かつlocalhostでない場合
-  if (envUrl && envUrl !== 'undefined' && !envUrl.includes('localhost') && envUrl !== currentOrigin) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[getAppUrl] Using envUrl:', envUrl)
-    }
+  if (envUrl && envUrl !== 'undefined' && !envUrl.includes('localhost')) {
+    console.log('[getAppUrl] Development environment, using envUrl:', envUrl)
     return envUrl
   }
   
-  // それ以外の場合は現在のoriginを使用（本番環境では本番URL、開発環境ではlocalhost）
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[getAppUrl] Using currentOrigin:', currentOrigin)
-  }
+  // それ以外の場合は現在のoriginを使用（開発環境ではlocalhost）
+  console.log('[getAppUrl] Development environment, using currentOrigin:', currentOrigin)
   return currentOrigin
 }

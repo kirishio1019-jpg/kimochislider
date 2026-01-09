@@ -49,8 +49,13 @@ export default function HomePage() {
       const appUrl = getAppUrl()
       const redirectUrl = `${appUrl}/auth/callback`
       
-      console.log('Google Login - App URL:', appUrl)
-      console.log('Google Login - Redirect URL:', redirectUrl)
+      console.log('=== Google Login Debug ===')
+      console.log('App URL:', appUrl)
+      console.log('Redirect URL:', redirectUrl)
+      console.log('Window location origin:', window.location.origin)
+      console.log('Window location hostname:', window.location.hostname)
+      console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
+      console.log('========================')
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
