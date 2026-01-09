@@ -110,6 +110,7 @@ export default function EventManageClient({
   const endDate = event.end_at ? new Date(event.end_at) : null
   const publicUrl = origin ? `${origin}/e/${event.slug}` : ''
   const messageUrl = origin ? `${origin}/m/${event.slug}` : ''
+  const embedUrl = origin ? `${origin}/embed/${event.slug}` : ''
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -466,6 +467,15 @@ export default function EventManageClient({
                 >
                   <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                     公開ページを開く
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full justify-start gap-2 font-light"
+                >
+                  <a href={embedUrl} target="_blank" rel="noopener noreferrer">
+                    埋め込み用URLを開く
                   </a>
                 </Button>
                 <Button
