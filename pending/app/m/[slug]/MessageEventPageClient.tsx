@@ -352,6 +352,18 @@ export default function MessageEventPageClient({ event, responseCount }: Message
             <CardDescription className="text-pretty text-base leading-relaxed">
               スライダーで気持ちを入力してください
             </CardDescription>
+
+            {/* スライド済み人数 */}
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 shadow-sm">
+                <span className="text-base font-bold text-primary">
+                  {responseCount}
+                </span>
+                <span className="text-xs font-medium text-foreground">
+                  人がスライドした
+                </span>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
