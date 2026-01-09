@@ -17,19 +17,52 @@
 
 以下のSQLをコピーして、SQL Editorに貼り付け、実行してください：
 
+**重要**: 以下のSQLは、`user_id`カラムを含むすべての必要なカラムを追加します。
+
 ```sql
--- is_confirmedカラムを追加
+-- ステップ1: user_idカラムを追加（Googleログイン機能に必要）
+ALTER TABLE responses ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
+-- ステップ2: インデックスを作成（パフォーマンス向上）
+CREATE INDEX IF NOT EXISTS idx_responses_user_id ON responses(user_id);
+CREATE INDEX IF NOT EXISTS idx_responses_event_user ON responses(event_id, user_id);
+
+-- ステップ3: event_idとuser_idのユニーク制約を追加（一人一イベントにつき一つの回答）
+-- ただし、user_idがNULLの場合は複数許可（匿名ユーザー）
+CREATE UNIQUE INDEX IF NOT EXISTS idx_responses_event_user_unique 
+ON responses(event_id, user_id) 
+WHERE user_id IS NOT NULL;
+
+-- ステップ4: is_confirmedカラムを追加
 ALTER TABLE responses ADD COLUMN IF NOT EXISTS is_confirmed BOOLEAN DEFAULT false;
 
--- x_valueとy_valueカラムを追加
+-- ステップ5: x_valueとy_valueカラムを追加
 ALTER TABLE responses ADD COLUMN IF NOT EXISTS x_value INTEGER CHECK (x_value >= 0 AND x_value <= 100);
 ALTER TABLE responses ADD COLUMN IF NOT EXISTS y_value INTEGER CHECK (y_value >= 0 AND y_value <= 100);
 
--- 既存データの互換性のため、scoreをxValueとyValueに設定
+-- ステップ6: 既存データの互換性のため、scoreをxValueとyValueに設定
 UPDATE responses 
 SET x_value = score, y_value = score 
 WHERE x_value IS NULL OR y_value IS NULL;
+
+-- ステップ7: RLSポリシーを更新（ユーザーは自分の回答を更新できる）
+DROP POLICY IF EXISTS "Users can update their own responses" ON responses;
+CREATE POLICY "Users can update their own responses" ON responses
+  FOR UPDATE 
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- ステップ8: ユーザーは自分の回答を削除できる
+DROP POLICY IF EXISTS "Users can delete their own responses" ON responses;
+CREATE POLICY "Users can delete their own responses" ON responses
+  FOR DELETE 
+  USING (auth.uid() = user_id);
 ```
+
+**または、個別のSQLファイルを使用する場合：**
+
+1. `add-user-id-to-responses.sql` - `user_id`カラムの追加
+2. `fix-responses-rls-policy.sql` - RLSポリシーの修正
 
 ### ステップ3: 動作確認
 
@@ -68,6 +101,12 @@ WHERE x_value IS NULL OR y_value IS NULL;
 **原因**: `y_value`カラムが追加されていない
 
 **解決策**: 上記のSQLを実行してカラムを追加
+
+### エラー: Could not find the 'user_id' column of 'responses' in the schema cache
+
+**原因**: `user_id`カラムが追加されていない（Googleログイン機能に必要）
+
+**解決策**: 上記のSQLを実行して`user_id`カラムを追加。詳細は`ADD_USER_ID_COLUMN.md`を参照してください。
 
 ### エラー: new row violates row-level security policy
 
