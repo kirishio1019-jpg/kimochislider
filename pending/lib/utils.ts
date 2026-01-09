@@ -47,11 +47,27 @@ export function getAppUrl(): string {
   }
   
   // クライアントサイドの場合
+  // 本番環境では、window.location.originが本番URLになるため、それを優先的に使用
   const envUrl = process.env.NEXT_PUBLIC_APP_URL
-  if (envUrl && envUrl !== 'undefined' && !envUrl.includes('localhost')) {
+  const currentOrigin = window.location.origin
+  
+  // デバッグ用ログ（本番環境では削除可能）
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[getAppUrl] envUrl:', envUrl)
+    console.log('[getAppUrl] currentOrigin:', currentOrigin)
+  }
+  
+  // 環境変数が設定されていて、かつlocalhostでない場合
+  if (envUrl && envUrl !== 'undefined' && !envUrl.includes('localhost') && envUrl !== currentOrigin) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[getAppUrl] Using envUrl:', envUrl)
+    }
     return envUrl
   }
   
-  // 環境変数が設定されていない、またはlocalhostの場合は現在のoriginを使用
-  return window.location.origin
+  // それ以外の場合は現在のoriginを使用（本番環境では本番URL、開発環境ではlocalhost）
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[getAppUrl] Using currentOrigin:', currentOrigin)
+  }
+  return currentOrigin
 }
