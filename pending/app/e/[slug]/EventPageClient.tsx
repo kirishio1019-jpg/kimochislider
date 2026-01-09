@@ -656,8 +656,14 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
                 return null
               })()}
 
+              {/* 注意書き */}
+              <div className="space-y-2 text-xs text-muted-foreground/70 text-center font-light">
+                <p>応募内容はいつでも変更可能です。</p>
+                <p>スライドは完全匿名性です。</p>
+              </div>
+
               <Button type="submit" disabled={isSubmitting} size="lg" className="w-full font-light">
-                {isSubmitting ? "保存中..." : "気持ちを保存する"}
+                {isSubmitting ? "保存中..." : "今の気持ちを保存する"}
               </Button>
             </form>
           </CardContent>
