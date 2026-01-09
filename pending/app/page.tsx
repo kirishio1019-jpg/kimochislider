@@ -81,6 +81,7 @@ export default function HomePage() {
     fee_text: "",
     organizer_name: "",
     additional_info: "",
+    public_page_content: "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {

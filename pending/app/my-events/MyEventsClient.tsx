@@ -93,7 +93,7 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {(eventsWithStats.length > 0 ? eventsWithStats : events).map((event) => {
               const startDate = new Date(event.start_at)
-              const responseCount = 'responseCount' in event ? event.responseCount : 0
+              const responseCount: number = 'responseCount' in event ? (event as EventWithStats).responseCount : 0
               
               return (
                 <Card
