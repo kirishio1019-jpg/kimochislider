@@ -45,10 +45,14 @@ export default function HomePage() {
 
   const handleGoogleLogin = async () => {
     try {
+      // 本番環境では環境変数を使用、開発環境ではwindow.location.originを使用
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      const redirectUrl = `${appUrl}/auth/callback`
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         },
       })
       if (error) {
