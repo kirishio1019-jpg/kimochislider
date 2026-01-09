@@ -192,23 +192,35 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-8">
-              {/* マトリクス表示（送信後は常に表示） */}
-              <div className="flex flex-col gap-6 rounded-2xl border border-border/50 bg-muted/20 backdrop-blur-sm p-7 shadow-md">
-                <Label className="text-base font-light">みんなの気持ち</Label>
-                <FeelingSlider
-                  value={score}
-                  onChange={setScore}
-                  showMatrix={true}
-                  otherResponses={otherResponses}
-                  xValue={xValue}
-                  yValue={yValue}
-                  onXChange={setXValue}
-                  onYChange={setYValue}
-                  availabilityStatus={availabilityStatus}
-                  onAvailabilityChange={setAvailabilityStatus}
-                  disabled={false}
-                />
-              </div>
+              {/* 平均の興味の度合いを表示 */}
+              {(() => {
+                // 自分の回答も含めて平均を計算
+                const allResponses = [...otherResponses, { x_value: xValue, y_value: yValue }]
+                const averageInterest = allResponses.length > 0
+                  ? Math.round(allResponses.reduce((sum, r) => sum + r.x_value, 0) / allResponses.length)
+                  : xValue
+
+                return (
+                  <div className="flex flex-col gap-4 rounded-2xl border border-border/50 bg-muted/20 backdrop-blur-sm p-6 shadow-md">
+                    <Label className="text-base font-light">みんなの気持ち</Label>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-light text-muted-foreground">平均の興味の度合い</span>
+                        <span className="text-2xl font-light text-foreground">{averageInterest}%</span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full bg-primary transition-all duration-500"
+                          style={{ width: `${averageInterest}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-light">
+                        {allResponses.length}人の平均
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()}
 
               <div className="flex flex-col gap-4 rounded-2xl border border-border/40 bg-muted/30 backdrop-blur-sm p-6 shadow-sm">
                 <div className="flex items-center justify-between">
@@ -237,15 +249,6 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
                 </code>
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   このリンクを保存すると、後から気持ちを更新できます
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-4 rounded-2xl border border-primary/20 bg-primary/[0.05] backdrop-blur-sm p-6 shadow-md">
-                <p className="text-sm font-light leading-relaxed text-foreground">
-                  イベントが近づいたら、また気持ちを聞きにきます
-                </p>
-                <p className="text-xs leading-relaxed text-muted-foreground font-light">
-                  {email ? "メールでリマインドをお送りします" : "更新用リンクをブックマークしておくと便利です"}
                 </p>
               </div>
 
