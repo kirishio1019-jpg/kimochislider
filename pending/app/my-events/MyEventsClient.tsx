@@ -32,9 +32,11 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
             .select('*', { count: 'exact', head: true })
             .eq('event_id', event.id)
           
+          const responseCount: number = typeof count === 'number' ? count : 0
+          
           return {
             ...event,
-            responseCount: count || 0,
+            responseCount,
           }
         })
       )
