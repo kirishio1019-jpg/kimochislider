@@ -449,7 +449,7 @@ export function FeelingSlider({
           <div className="relative">
             <div 
               ref={sliderRef}
-              className="relative h-12 w-full flex items-center cursor-pointer"
+              className="relative h-12 w-full flex items-center cursor-pointer touch-none"
               onMouseDown={(e) => {
                 if (disabled) return
                 const rect = sliderRef.current?.getBoundingClientRect()
@@ -458,6 +458,19 @@ export function FeelingSlider({
                 const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
                 const newValue = Math.round(percentage)
                 handleXChange(newValue)
+              }}
+              onTouchStart={(e) => {
+                if (disabled) return
+                e.preventDefault()
+                const rect = sliderRef.current?.getBoundingClientRect()
+                if (!rect) return
+                const touch = e.touches[0]
+                if (touch) {
+                  const x = touch.clientX - rect.left
+                  const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                  const newValue = Math.round(percentage)
+                  handleXChange(newValue)
+                }
               }}
             >
               {/* 背景トラック */}
