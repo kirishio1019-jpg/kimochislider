@@ -56,6 +56,9 @@ export function FeelingSlider({
   const yValue = externalYValue !== undefined ? externalYValue : internalYValue
   const availabilityStatus = externalAvailabilityStatus !== undefined ? externalAvailabilityStatus : internalAvailabilityStatus
 
+  // マトリクスのマージン設定（点がはみ出さないように）
+  const matrixMargin = 4 // パーセンテージ単位のマージン
+
   // valueからxValueとyValueを初期化（既存データとの互換性のため）
   useEffect(() => {
     if (value !== undefined && value !== null) {
@@ -180,6 +183,7 @@ export function FeelingSlider({
   }, [isYSliderDragging, handleYSliderMouseMove, handleYSliderMouseUp, handleYSliderTouchMove, handleYSliderTouchEnd])
 
   // マトリクスクリック/ドラッグハンドラー（マウスとタッチの両方に対応）
+  // マージンを考慮した位置計算
   const handleMatrixInteraction = useCallback((clientX: number, clientY: number) => {
     if (disabled || !containerRef.current) return
 
@@ -187,11 +191,20 @@ export function FeelingSlider({
     const x = clientX - rect.left
     const y = clientY - rect.top
     
-    // 横軸: 左=0, 右=100 (興味なし→興味あり)
-    const newX = Math.max(0, Math.min(100, Math.round((x / rect.width) * 100)))
+    // マージンを考慮した位置計算
+    const marginPx = (matrixMargin / 100) * rect.width
+    const availableWidth = rect.width - (2 * marginPx)
+    const availableHeight = rect.height - (2 * marginPx)
+    
+    // マージン内の相対位置を計算
+    const relativeX = Math.max(0, Math.min(availableWidth, x - marginPx))
+    const relativeY = Math.max(0, Math.min(availableHeight, y - marginPx))
+    
+    // 0-100の範囲に変換
+    const newX = Math.max(0, Math.min(100, Math.round((relativeX / availableWidth) * 100)))
     
     // 縦軸: 上=100, 下=0 (行けそう→行けなそう、反転)
-    const newY = Math.max(0, Math.min(100, Math.round(100 - (y / rect.height) * 100)))
+    const newY = Math.max(0, Math.min(100, Math.round(100 - (relativeY / availableHeight) * 100)))
     
     if (onXChange) {
       onXChange(newX)
@@ -207,7 +220,7 @@ export function FeelingSlider({
     
     const score = calculateScore(newX, newY)
     onChange(score)
-  }, [disabled, calculateScore, onChange, onXChange, onYChange])
+  }, [disabled, calculateScore, onChange, onXChange, onYChange, matrixMargin])
 
   const handleMatrixClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     handleMatrixInteraction(e.clientX, e.clientY)
@@ -330,9 +343,19 @@ export function FeelingSlider({
     }
   }, [isSliderDragging, handleSliderMouseMove, handleSliderMouseUp, handleSliderTouchMove, handleSliderTouchEnd])
 
-  // マトリクス内のドットの位置計算
-  const dotLeft = `${xValue}%`
-  const dotTop = `${100 - yValue}%`
+  // マトリクス内のドットの位置計算（点がはみ出さないようにマージンを考慮）
+  // ドットのサイズを考慮してマージンを設定（size-7 = 28px、size-4 = 16px）
+  // マージンは各辺4%程度（ドットの半径分）
+  const minPos = matrixMargin
+  const maxPos = 100 - matrixMargin
+  
+  // 位置をマージン内に制限
+  const clampedX = Math.max(minPos, Math.min(maxPos, xValue))
+  const clampedY = Math.max(minPos, Math.min(maxPos, yValue))
+  
+  // マージンを考慮した位置計算
+  const dotLeft = `${((clampedX - minPos) / (maxPos - minPos)) * (100 - 2 * matrixMargin) + matrixMargin}%`
+  const dotTop = `${100 - (((clampedY - minPos) / (maxPos - minPos)) * (100 - 2 * matrixMargin) + matrixMargin)}%`
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -357,18 +380,26 @@ export function FeelingSlider({
                   `
                 }}
               >
-                {/* 4つのコーナーのハイライト */}
-                <div className="absolute inset-0">
-                  <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-primary/10 rounded-tl-full" />
-                  <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-muted/20 rounded-tr-full" />
-                  <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-muted/20 rounded-bl-full" />
-                  <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-muted/30 rounded-br-full" />
+                {/* 十字架のグリッド線 */}
+                <div className="absolute inset-0 opacity-30">
+                  {/* 縦線（中央） */}
+                  <div className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 bg-primary/60" style={{ 
+                    top: `${matrixMargin}%`, 
+                    height: `${100 - 2 * matrixMargin}%` 
+                  }} />
+                  {/* 横線（中央） */}
+                  <div className="absolute top-1/2 left-0 h-0.5 w-full -translate-y-1/2 bg-primary/60" style={{ 
+                    left: `${matrixMargin}%`, 
+                    width: `${100 - 2 * matrixMargin}%` 
+                  }} />
                 </div>
 
                 {/* 他の人の回答を表示 */}
                 {otherResponses.map((response, index) => {
-                  const otherDotLeft = `${response.x_value}%`
-                  const otherDotTop = `${100 - response.y_value}%`
+                  const otherClampedX = Math.max(minPos, Math.min(maxPos, response.x_value))
+                  const otherClampedY = Math.max(minPos, Math.min(maxPos, response.y_value))
+                  const otherDotLeft = `${((otherClampedX - minPos) / (maxPos - minPos)) * (100 - 2 * matrixMargin) + matrixMargin}%`
+                  const otherDotTop = `${100 - (((otherClampedY - minPos) / (maxPos - minPos)) * (100 - 2 * matrixMargin) + matrixMargin)}%`
                   return (
                     <div
                       key={index}
@@ -407,12 +438,6 @@ export function FeelingSlider({
                       </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* グリッド線 */}
-                <div className="absolute inset-0 opacity-25">
-                  <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-primary/40" />
-                  <div className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-primary/40" />
                 </div>
 
                 {/* コーナーラベル */}

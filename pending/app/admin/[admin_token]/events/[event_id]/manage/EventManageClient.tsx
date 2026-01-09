@@ -458,7 +458,7 @@ export default function EventManageClient({
                   <span className="text-2xl font-light text-foreground">{stats.total}</span>
                 </div>
 
-                {/* マトリクス表示 */}
+                {/* マトリクス表示（十字架型） */}
                 {(() => {
                   // ユニークなユーザーの最新の回答のみを取得
                   const userLatestResponses = new Map<string, { x_value: number; y_value: number }>()
@@ -493,52 +493,61 @@ export default function EventManageClient({
                   }
 
                   const matrixData = Array.from(userLatestResponses.values())
-                  const matrixSize = 200 // マトリクスのサイズ（px）
+                  const matrixSize = 240 // マトリクスのサイズ（px）
+                  const padding = 20 // 余裕を持たせるためのパディング
+                  const plotSize = matrixSize - (padding * 2) // 実際にプロットする領域のサイズ
+                  const pointRadius = 4 // 点の半径
 
                   return (
                     <div className="space-y-3 pt-4 border-t border-border/50">
                       <div className="text-sm font-light text-muted-foreground text-center">
                         参加者の位置
                       </div>
-                      <div className="relative" style={{ width: matrixSize, height: matrixSize, margin: '0 auto' }}>
-                        {/* 背景グリッド */}
+                      <div className="relative flex justify-center" style={{ width: matrixSize, height: matrixSize, margin: '0 auto' }}>
+                        {/* SVG背景 */}
                         <svg width={matrixSize} height={matrixSize} className="absolute inset-0">
-                          {/* グリッド線 */}
-                          {[0, 25, 50, 75, 100].map((val) => (
-                            <g key={val}>
-                              <line
-                                x1={(val / 100) * matrixSize}
-                                y1={0}
-                                x2={(val / 100) * matrixSize}
-                                y2={matrixSize}
-                                stroke="currentColor"
-                                strokeWidth={0.5}
-                                className="text-border/30"
-                              />
-                              <line
-                                x1={0}
-                                y1={(val / 100) * matrixSize}
-                                x2={matrixSize}
-                                y2={(val / 100) * matrixSize}
-                                stroke="currentColor"
-                                strokeWidth={0.5}
-                                className="text-border/30"
-                              />
-                            </g>
-                          ))}
+                          {/* 十字架の縦線（中央） */}
+                          <line
+                            x1={matrixSize / 2}
+                            y1={padding}
+                            x2={matrixSize / 2}
+                            y2={matrixSize - padding}
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            className="text-border"
+                          />
+                          {/* 十字架の横線（中央） */}
+                          <line
+                            x1={padding}
+                            y1={matrixSize / 2}
+                            x2={matrixSize - padding}
+                            y2={matrixSize / 2}
+                            stroke="currentColor"
+                            strokeWidth={2}
+                            className="text-border"
+                          />
                         </svg>
                         {/* データポイント */}
                         <svg width={matrixSize} height={matrixSize} className="relative z-10">
-                          {matrixData.map((point, idx) => (
-                            <circle
-                              key={idx}
-                              cx={(point.x_value / 100) * matrixSize}
-                              cy={matrixSize - (point.y_value / 100) * matrixSize}
-                              r={4}
-                              fill="currentColor"
-                              className="text-primary"
-                            />
-                          ))}
+                          {matrixData.map((point, idx) => {
+                            // 点がはみ出さないように、paddingを考慮して座標を計算
+                            const x = padding + (point.x_value / 100) * plotSize
+                            const y = padding + ((100 - point.y_value) / 100) * plotSize
+                            // 点が境界を超えないように制限
+                            const clampedX = Math.max(padding + pointRadius, Math.min(matrixSize - padding - pointRadius, x))
+                            const clampedY = Math.max(padding + pointRadius, Math.min(matrixSize - padding - pointRadius, y))
+                            
+                            return (
+                              <circle
+                                key={idx}
+                                cx={clampedX}
+                                cy={clampedY}
+                                r={pointRadius}
+                                fill="currentColor"
+                                className="text-primary"
+                              />
+                            )
+                          })}
                         </svg>
                         {/* 軸ラベル */}
                         <div className="absolute -left-12 top-0 bottom-0 flex flex-col justify-between text-xs text-muted-foreground font-light py-2">
