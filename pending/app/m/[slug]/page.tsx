@@ -23,28 +23,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
+  // 絶対URLを生成（Vercel本番環境で確実に動作するように）
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-name.vercel.app'
-  // OGP画像URL（プレゼントUI風のデザイン）
-  const ogImageUrl = `${appUrl}/api/og?title=${encodeURIComponent(event.title)}&slug=${slug}`
+  const pageUrl = `${appUrl}/m/${slug}`
+  // OGP画像URL（プレゼントUI風のデザイン）- 絶対URLで生成
+  const ogImageUrl = `${appUrl}/api/og?title=${encodeURIComponent(event.title)}&slug=${encodeURIComponent(slug)}`
 
   return {
+    metadataBase: new URL(appUrl),
     title: `${event.title} - イベントのご招待です`,
     description: 'イベントのご招待です。きもちスライダーで気持ちを共有しましょう',
     openGraph: {
+      type: 'website',
+      locale: 'ja_JP',
+      url: pageUrl,
+      siteName: 'きもちスライダー',
       title: `${event.title} - イベントのご招待です`,
       description: 'イベントのご招待です。きもちスライダーで気持ちを共有しましょう',
-      url: `${appUrl}/m/${slug}`,
-      siteName: 'きもちスライダー',
       images: [
         {
           url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: `${event.title} - イベントのご招待です`,
+          type: 'image/png',
         },
       ],
-      locale: 'ja_JP',
-      type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
@@ -52,11 +56,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: 'イベントのご招待です。きもちスライダーで気持ちを共有しましょう',
       images: [ogImageUrl],
     },
-    // LINE用のメタデータ
+    // 追加のメタデータ（LINE、Slack、Discord等に対応）
     other: {
+      'og:image:secure_url': ogImageUrl,
       'og:image:width': '1200',
       'og:image:height': '630',
       'og:image:type': 'image/png',
+      'og:image:alt': `${event.title} - イベントのご招待です`,
+      // Discord用
+      'theme-color': '#ff6b6b',
     },
   }
 }
