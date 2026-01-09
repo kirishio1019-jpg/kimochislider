@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from 'next/server'
 // イベントの回答一覧を取得（マトリクス表示用）
 export async function GET(
   request: NextRequest,
-  { params }: { params: { event_id: string } }
+  { params }: { params: Promise<{ event_id: string }> }
 ) {
   try {
-    const { event_id } = params
+    const { event_id } = await params
 
     if (!event_id) {
       return NextResponse.json(
