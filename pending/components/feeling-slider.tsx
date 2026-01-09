@@ -62,14 +62,11 @@ export function FeelingSlider({
   const matrixMargin = 4 // パーセンテージ単位のマージン
 
   // valueからxValueとyValueを初期化（既存データとの互換性のため）
+  // ただし、externalXValueとexternalYValueが指定されている場合は無視
   useEffect(() => {
-    if (value !== undefined && value !== null) {
-      if (externalXValue === undefined) {
-        setInternalXValue(value)
-      }
-      if (externalYValue === undefined) {
-        setInternalYValue(value)
-      }
+    if (value !== undefined && value !== null && externalXValue === undefined && externalYValue === undefined) {
+      setInternalXValue(value)
+      setInternalYValue(value)
     }
   }, [value, externalXValue, externalYValue])
 

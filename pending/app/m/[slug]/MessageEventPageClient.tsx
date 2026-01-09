@@ -28,8 +28,8 @@ export default function MessageEventPageClient({ event, responseCount }: Message
   const supabase = createClient()
   
   const [score, setScore] = useState(0)
-  const [xValue, setXValue] = useState(0)
-  const [yValue, setYValue] = useState(50)
+  const [xValue, setXValue] = useState(0) // 初期値: 0%（興味なし）
+  const [yValue, setYValue] = useState(50) // 初期値: 50%（中間）
   const [availabilityStatus, setAvailabilityStatus] = useState<AvailabilityStatus>(null)
   const [email, setEmail] = useState("")
   const [isConfirmed, setIsConfirmed] = useState(false)
