@@ -8,6 +8,8 @@ export async function GET(
 ) {
   try {
     const { event_id } = await params
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('user_id')
 
     if (!event_id) {
       return NextResponse.json(
@@ -18,7 +20,27 @@ export async function GET(
 
     const supabase = await createClient()
 
-    // x_valueとy_valueが存在する回答のみ取得
+    // user_idが指定されている場合、そのユーザーの回答を取得
+    if (userId) {
+      const { data, error } = await supabase
+        .from('responses')
+        .select('*')
+        .eq('event_id', event_id)
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+
+      if (error) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({ data: data || [] })
+    }
+
+    // user_idが指定されていない場合、x_valueとy_valueが存在する回答のみ取得（マトリクス表示用）
     const { data, error } = await supabase
       .from('responses')
       .select('x_value, y_value')

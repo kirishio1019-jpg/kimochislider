@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FeelingSlider } from "@/components/feeling-slider"
 import { Copy, Check } from "lucide-react"
 import { generateToken, getAppUrl } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
 import type { Event } from "@/types"
 
 interface EventPageClientProps {
@@ -25,6 +26,8 @@ interface OtherResponse {
 type AvailabilityStatus = "can" | "cannot" | "later" | null
 
 export default function EventPageClient({ event, responseCount }: EventPageClientProps) {
+  const supabase = createClient()
+  
   // デバッグ: responseCountの値を確認
   useEffect(() => {
     console.log('responseCount:', responseCount)
@@ -43,6 +46,23 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
   const [otherResponses, setOtherResponses] = useState<OtherResponse[]>([])
   const [showMatrix, setShowMatrix] = useState(false)
   const [isCompact, setIsCompact] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // ユーザーIDを取得
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUserId(user?.id || null)
+    }
+    getUser()
+
+    // 認証状態の変更を監視
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserId(session?.user?.id || null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
 
   // コンパクトモード判定（メッセージアプリ内で開いた場合）
   useEffect(() => {
@@ -126,12 +146,16 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
         is_confirmed: isConfirmed,
         x_value: xValue,
         y_value: calculatedYValue,
+        user_id: userId, // Googleアカウントでログインしている場合はuser_idを送信
       }),
     })
 
     if (response.ok) {
+      const responseData = await response.json()
+      // 既存の回答を更新した場合は既存のedit_tokenを使用、新規作成の場合は新しいtokenを使用
+      const finalToken = responseData.data?.edit_token || token
       const appUrl = getAppUrl()
-      const link = `${appUrl}/r/${token}`
+      const link = `${appUrl}/r/${finalToken}`
       setEditLink(link)
       // 送信後にマトリクスを表示
       setShowMatrix(true)
@@ -143,7 +167,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            edit_token: token,
+            edit_token: finalToken,
             email,
           }),
         })
