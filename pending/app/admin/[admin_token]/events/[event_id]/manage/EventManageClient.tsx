@@ -17,6 +17,11 @@ interface EventManageClientProps {
     total: number
     average_score: number
     category_distribution: { category: string; count: number }[]
+    availability_counts: {
+      can: number
+      cannot: number
+      later: number
+    }
   }
   responses: Array<{
     id: string
@@ -453,6 +458,22 @@ export default function EventManageClient({
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-light text-muted-foreground">平均スコア</span>
                     <span className="text-xl font-light text-foreground">{stats.average_score.toFixed(1)}%</span>
+                  </div>
+                </div>
+
+                {/* 参加可否の統計 */}
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-light text-muted-foreground">行ける</span>
+                    <span className="text-lg font-light text-foreground">{stats.availability_counts.can}人</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-light text-muted-foreground">行けない</span>
+                    <span className="text-lg font-light text-foreground">{stats.availability_counts.cannot}人</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-light text-muted-foreground">未定</span>
+                    <span className="text-lg font-light text-foreground">{stats.availability_counts.later}人</span>
                   </div>
                 </div>
 

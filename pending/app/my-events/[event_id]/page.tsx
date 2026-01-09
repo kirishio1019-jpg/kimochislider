@@ -65,12 +65,60 @@ export default async function MyEventManagePage({ params }: PageProps) {
     count: categoryCounts[cat.label] || 0,
   }))
 
+  // 参加可否の統計（ユニークなユーザーの最新の回答のみをカウント）
+  const availabilityCounts = {
+    can: 0,      // y_value = 100
+    cannot: 0,  // y_value = 0
+    later: 0,   // y_value = 50
+  }
+
+  if (responses && responses.length > 0) {
+    // ユニークなユーザーの最新の回答のみを取得
+    const userLatestResponses = new Map<string, { y_value: number | null }>()
+    
+    // updated_atでソート（最新のものが先頭）
+    const sortedResponses = [...responses].sort((a, b) => {
+      const aTime = new Date(a.updated_at || a.created_at).getTime()
+      const bTime = new Date(b.updated_at || b.created_at).getTime()
+      return bTime - aTime
+    })
+
+    for (const response of sortedResponses) {
+      const userId = (response as any).user_id
+      if (userId) {
+        // ログインユーザー: user_idをキーとして、最新の回答のみを保持
+        if (!userLatestResponses.has(userId)) {
+          userLatestResponses.set(userId, { y_value: (response as any).y_value })
+        }
+      } else {
+        // 匿名ユーザー: 各回答を個別にカウント
+        const key = `anonymous_${response.id}`
+        if (!userLatestResponses.has(key)) {
+          userLatestResponses.set(key, { y_value: (response as any).y_value })
+        }
+      }
+    }
+
+    // y_valueで分類
+    userLatestResponses.forEach((response) => {
+      const yValue = response.y_value
+      if (yValue === 100) {
+        availabilityCounts.can++
+      } else if (yValue === 0) {
+        availabilityCounts.cannot++
+      } else if (yValue === 50) {
+        availabilityCounts.later++
+      }
+    })
+  }
+
   const data = {
     event,
     stats: {
       total,
       average_score: averageScore,
       category_distribution: categoryDistribution,
+      availability_counts: availabilityCounts,
     },
     responses: responses?.map((r) => ({
       id: r.id,
