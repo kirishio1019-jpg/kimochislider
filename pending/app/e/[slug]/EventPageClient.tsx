@@ -593,6 +593,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
                   onYChange={setYValue}
                   availabilityStatus={availabilityStatus}
                   onAvailabilityChange={setAvailabilityStatus}
+                  responseCount={responseCount}
                 />
               </div>
 

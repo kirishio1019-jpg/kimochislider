@@ -23,6 +23,7 @@ interface FeelingSliderProps {
   onYChange?: (value: number) => void // yValue変更時のコールバック
   availabilityStatus?: AvailabilityStatus // 行ける/行けない/未定
   onAvailabilityChange?: (status: AvailabilityStatus) => void // 三択変更時のコールバック
+  responseCount?: number // 参加者数（スライド済み人数）
 }
 
 export function FeelingSlider({ 
@@ -37,6 +38,7 @@ export function FeelingSlider({
   onYChange,
   availabilityStatus: externalAvailabilityStatus,
   onAvailabilityChange,
+  responseCount,
 }: FeelingSliderProps) {
   // 座標系の定義:
   // xValue: 0-100 (0=興味なし, 100=興味あり) - 横軸
@@ -478,6 +480,20 @@ export function FeelingSlider({
 
       {/* 個別のスライダー */}
       <div className="flex flex-col gap-6">
+        {/* 参加者数表示 */}
+        {responseCount !== undefined && (
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 shadow-sm">
+              <span className="text-base font-bold text-primary">
+                {responseCount}
+              </span>
+              <span className="text-xs font-medium text-foreground">
+                人がスライドした
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* 横軸スライダー（興味の度合い） */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">

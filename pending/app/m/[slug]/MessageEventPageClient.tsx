@@ -379,6 +379,7 @@ export default function MessageEventPageClient({ event, responseCount }: Message
                   onYChange={setYValue}
                   availabilityStatus={availabilityStatus}
                   onAvailabilityChange={setAvailabilityStatus}
+                  responseCount={responseCount}
                 />
               </div>
 
