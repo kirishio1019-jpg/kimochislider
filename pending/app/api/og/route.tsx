@@ -5,9 +5,19 @@ export const runtime = 'edge'
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    // リクエストURLを取得
+    const url = request.url
+    const { searchParams } = new URL(url)
     const title = searchParams.get('title') || 'イベント'
     const slug = searchParams.get('slug') || ''
+
+    // デバッグ用ログ
+    console.log('[OG Image] Generating image for:', { 
+      title, 
+      slug,
+      url,
+      userAgent: request.headers.get('user-agent'),
+    })
 
     return new ImageResponse(
       (
@@ -207,8 +217,61 @@ export async function GET(request: NextRequest) {
       }
     )
   } catch (e: unknown) {
-    return new Response(`Failed to generate the image: ${e instanceof Error ? e.message : String(e)}`, {
-      status: 500,
+    console.error('[OG Image] Error generating image:', e)
+    const errorMessage = e instanceof Error ? e.message : String(e)
+    const errorStack = e instanceof Error ? e.stack : undefined
+    
+    // エラーの詳細をログに記録
+    console.error('[OG Image] Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      type: e?.constructor?.name,
     })
+
+    // エラー画像を返す（デバッグ用）
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#fef7f0',
+            fontFamily: 'serif',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 32,
+              fontWeight: 500,
+              color: '#8b4513',
+              textAlign: 'center',
+              padding: '40px',
+            }}
+          >
+            OGP画像の生成に失敗しました
+          </div>
+          <div
+            style={{
+              fontSize: 16,
+              fontWeight: 300,
+              color: '#a0522d',
+              textAlign: 'center',
+              padding: '20px',
+              maxWidth: '800px',
+            }}
+          >
+            {errorMessage}
+          </div>
+        </div>
+      ),
+      {
+        width: 1200,
+        height: 630,
+      }
+    )
   }
 }

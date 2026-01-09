@@ -24,10 +24,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // 絶対URLを生成（Vercel本番環境で確実に動作するように）
+  // サーバーサイドでは環境変数を使用、なければデフォルト値を使用
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-name.vercel.app'
   const pageUrl = `${appUrl}/m/${slug}`
   // OGP画像URL（プレゼントUI風のデザイン）- 絶対URLで生成
   const ogImageUrl = `${appUrl}/api/og?title=${encodeURIComponent(event.title)}&slug=${encodeURIComponent(slug)}`
+  
+  // デバッグ用ログ
+  console.log('[OGP Metadata]', {
+    appUrl,
+    pageUrl,
+    ogImageUrl,
+    title: event.title,
+    slug,
+    envUrl: process.env.NEXT_PUBLIC_APP_URL,
+  })
 
   return {
     metadataBase: new URL(appUrl),
