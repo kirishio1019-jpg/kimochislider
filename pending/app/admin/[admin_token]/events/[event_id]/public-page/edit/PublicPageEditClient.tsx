@@ -15,6 +15,7 @@ interface PublicPageContentItem {
   id: string
   type: 'text' | 'select'
   content: string
+  title?: string // テキストブロックのタイトル（任意）
   options?: string[] // チェックボックスの場合の選択肢
   order: number
 }
