@@ -28,6 +28,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-name.vercel.app'
   const pageUrl = `${appUrl}/m/${slug}`
   // OGP画像URL（プレゼントUI風のデザイン）- 絶対URLで生成
+  // Next.jsのファイルベースメタデータ（opengraph-image.tsx）を使用する場合と、
+  // APIエンドポイント（/api/og）を使用する場合の両方に対応
   const ogImageUrl = `${appUrl}/api/og?title=${encodeURIComponent(event.title)}&slug=${encodeURIComponent(slug)}`
   
   // デバッグ用ログ
@@ -58,6 +60,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           height: 630,
           alt: `${event.title} - イベントのご招待です`,
           type: 'image/png',
+          secureUrl: ogImageUrl, // HTTPS対応
         },
       ],
     },
@@ -68,6 +71,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       images: [ogImageUrl],
     },
     // 追加のメタデータ（LINE、Slack、Discord等に対応）
+    // Next.jsのMetadata APIでは、otherプロパティで追加のメタタグを設定可能
     other: {
       'og:image:secure_url': ogImageUrl,
       'og:image:width': '1200',
