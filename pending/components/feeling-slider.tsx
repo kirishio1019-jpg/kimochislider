@@ -46,8 +46,10 @@ export function FeelingSlider({
   const [internalAvailabilityStatus, setInternalAvailabilityStatus] = useState<AvailabilityStatus>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const sliderRef = useRef<HTMLDivElement>(null)
+  const ySliderRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isSliderDragging, setIsSliderDragging] = useState(false)
+  const [isYSliderDragging, setIsYSliderDragging] = useState(false)
 
   // 外部から制御される場合はそれを使用、そうでなければ内部状態を使用
   const xValue = externalXValue !== undefined ? externalXValue : internalXValue
@@ -85,26 +87,97 @@ export function FeelingSlider({
     onChange(clampedX)
   }, [onChange, onXChange])
 
-  // 三択ボタンの変更ハンドラー（行ける/行けない/未定）
-  const handleAvailabilityChange = useCallback((status: AvailabilityStatus) => {
+  // 縦軸スライダーの変更ハンドラー（行けなそう←→行けそう）
+  const handleYChange = useCallback((newY: number) => {
+    const clampedY = Math.max(0, Math.min(100, newY))
+    
+    if (onYChange) {
+      onYChange(clampedY)
+    } else {
+      setInternalYValue(clampedY)
+    }
+    
+    // 三択の状態を更新（後方互換性のため）
+    let status: AvailabilityStatus = null
+    if (clampedY === 100) status = "can"
+    else if (clampedY === 0) status = "cannot"
+    else if (clampedY === 50) status = "later"
+    
     if (onAvailabilityChange) {
       onAvailabilityChange(status)
     } else {
       setInternalAvailabilityStatus(status)
     }
-    
-    // 三択の状態をyValueに変換（後方互換性のため）
-    let yValue = 50 // デフォルト
-    if (status === "can") yValue = 100
-    else if (status === "cannot") yValue = 0
-    else if (status === "later") yValue = 50
-    
-    if (onYChange) {
-      onYChange(yValue)
-    } else {
-      setInternalYValue(yValue)
+  }, [onYChange, onAvailabilityChange])
+
+  // yValueスライダーのドラッグハンドラー（マウスとタッチの両方に対応）
+  const handleYSliderMouseDown = useCallback((e: React.MouseEvent) => {
+    if (disabled) return
+    e.preventDefault()
+    setIsYSliderDragging(true)
+  }, [disabled])
+
+  const handleYSliderTouchStart = useCallback((e: React.TouchEvent) => {
+    if (disabled) return
+    e.preventDefault()
+    setIsYSliderDragging(true)
+    const touch = e.touches[0]
+    if (touch && ySliderRef.current) {
+      const rect = ySliderRef.current.getBoundingClientRect()
+      const x = touch.clientX - rect.left
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+      const newValue = Math.round(percentage)
+      handleYChange(newValue)
     }
-  }, [onAvailabilityChange, onYChange])
+  }, [disabled, handleYChange])
+
+  const handleYSliderMove = useCallback((clientX: number) => {
+    if (!isYSliderDragging || !ySliderRef.current || disabled) return
+    
+    const rect = ySliderRef.current.getBoundingClientRect()
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    const newValue = Math.round(percentage)
+    handleYChange(newValue)
+  }, [isYSliderDragging, disabled, handleYChange])
+
+  const handleYSliderMouseMove = useCallback((e: MouseEvent) => {
+    handleYSliderMove(e.clientX)
+  }, [handleYSliderMove])
+
+  const handleYSliderTouchMove = useCallback((e: TouchEvent) => {
+    if (!isYSliderDragging || disabled) return
+    e.preventDefault()
+    const touch = e.touches[0]
+    if (touch) {
+      handleYSliderMove(touch.clientX)
+    }
+  }, [isYSliderDragging, disabled, handleYSliderMove])
+
+  const handleYSliderMouseUp = useCallback(() => {
+    setIsYSliderDragging(false)
+  }, [])
+
+  const handleYSliderTouchEnd = useCallback(() => {
+    setIsYSliderDragging(false)
+  }, [])
+
+  useEffect(() => {
+    if (isYSliderDragging) {
+      window.addEventListener('mousemove', handleYSliderMouseMove)
+      window.addEventListener('mouseup', handleYSliderMouseUp)
+      window.addEventListener('touchmove', handleYSliderTouchMove, { passive: false })
+      window.addEventListener('touchend', handleYSliderTouchEnd)
+      window.addEventListener('touchcancel', handleYSliderTouchEnd)
+      return () => {
+        window.removeEventListener('mousemove', handleYSliderMouseMove)
+        window.removeEventListener('mouseup', handleYSliderMouseUp)
+        window.removeEventListener('touchmove', handleYSliderTouchMove)
+        window.removeEventListener('touchend', handleYSliderTouchEnd)
+        window.removeEventListener('touchcancel', handleYSliderTouchEnd)
+      }
+    }
+  }, [isYSliderDragging, handleYSliderMouseMove, handleYSliderMouseUp, handleYSliderTouchMove, handleYSliderTouchEnd])
 
   // マトリクスクリック/ドラッグハンドラー（マウスとタッチの両方に対応）
   const handleMatrixInteraction = useCallback((clientX: number, clientY: number) => {
@@ -454,48 +527,105 @@ export function FeelingSlider({
           </div>
         </div>
 
-        {/* 三択ボタン（行ける/行けない/未定） */}
+        {/* 縦軸スライダー（行けなそう←→行けそう） */}
         <div className="flex flex-col gap-2">
-          <label className="text-xs font-light text-muted-foreground">
-            現時点での参加の可否 <span className="text-destructive">*</span>
-          </label>
-          <div className="flex gap-2 w-full">
-            <button
-              type="button"
-              onClick={() => handleAvailabilityChange("can")}
-              disabled={disabled}
-              className={`flex-1 px-4 py-3 rounded-2xl text-sm font-light transition-all duration-200 ${
-                availabilityStatus === "can"
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted/60 shadow-sm"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-light text-muted-foreground">
+              現時点での参加の可否 <span className="text-destructive">*</span>
+            </label>
+            <span className="text-xs font-medium text-foreground">{yValue}%</span>
+          </div>
+          <div className="relative">
+            <div 
+              ref={ySliderRef}
+              className="relative h-12 w-full flex items-center cursor-pointer touch-none"
+              onMouseDown={(e) => {
+                if (disabled) return
+                const rect = ySliderRef.current?.getBoundingClientRect()
+                if (!rect) return
+                const x = e.clientX - rect.left
+                const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                const newValue = Math.round(percentage)
+                handleYChange(newValue)
+              }}
+              onTouchStart={(e) => {
+                if (disabled) return
+                e.preventDefault()
+                const rect = ySliderRef.current?.getBoundingClientRect()
+                if (!rect) return
+                const touch = e.touches[0]
+                if (touch) {
+                  const x = touch.clientX - rect.left
+                  const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+                  const newValue = Math.round(percentage)
+                  handleYChange(newValue)
+                }
+              }}
             >
-              行ける
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAvailabilityChange("cannot")}
-              disabled={disabled}
-              className={`flex-1 px-4 py-3 rounded-2xl text-sm font-light transition-all duration-200 ${
-                availabilityStatus === "cannot"
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted/60 shadow-sm"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              行けない
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAvailabilityChange("later")}
-              disabled={disabled}
-              className={`flex-1 px-4 py-3 rounded-2xl text-sm font-light transition-all duration-200 ${
-                availabilityStatus === "later"
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted/60 shadow-sm"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              未定
-            </button>
+              {/* 背景トラック */}
+              <div 
+                className="absolute left-0 right-0 h-3 rounded-full bg-muted pointer-events-none" 
+                style={{ 
+                  top: '50%', 
+                  transform: 'translateY(-50%)', 
+                  zIndex: 1 
+                }} 
+              />
+              {/* フィル部分（スライドしたところまで色付け） */}
+              <div
+                className="absolute left-0 h-3 rounded-full pointer-events-none transition-all duration-150"
+                style={{
+                  width: `${yValue}%`,
+                  backgroundColor: `var(--primary)`,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 2,
+                  borderRadius: '9999px',
+                }}
+              />
+              {/* スライダー入力（透明、フォールバック用） */}
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={yValue}
+                onChange={(e) => {
+                  const newValue = Number.parseInt(e.target.value, 10)
+                  handleYChange(newValue)
+                }}
+                onInput={(e) => {
+                  const newValue = Number.parseInt((e.target as HTMLInputElement).value, 10)
+                  handleYChange(newValue)
+                }}
+                disabled={disabled}
+                className="feeling-slider absolute inset-0 h-full w-full cursor-pointer appearance-none rounded-full bg-transparent outline-none transition-opacity disabled:cursor-not-allowed disabled:opacity-50 opacity-0"
+                style={{ zIndex: 1, pointerEvents: 'none' }}
+              />
+              {/* カスタムハンドル（ドラッグ可能） */}
+              <div
+                className="absolute rounded-full cursor-grab active:cursor-grabbing transition-all duration-150 select-none touch-none"
+                onMouseDown={handleYSliderMouseDown}
+                onTouchStart={handleYSliderTouchStart}
+                style={{
+                  left: `clamp(0px, calc(${yValue}% - 10px), calc(100% - 20px))`,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '20px',
+                  height: '20px',
+                  backgroundColor: `oklch(0.45 0.15 35)`,
+                  border: '2px solid oklch(var(--background))',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 3px oklch(0.45 0.15 35 / 0.4)',
+                  zIndex: 50,
+                  pointerEvents: 'auto',
+                }}
+              />
+            </div>
+            {/* 左右の指標 */}
+            <div className="flex justify-between mt-1 px-1">
+              <span className="text-xs font-light text-muted-foreground">行けなそう</span>
+              <span className="text-xs font-light text-muted-foreground">行けそう</span>
+            </div>
           </div>
         </div>
       </div>
