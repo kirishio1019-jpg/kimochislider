@@ -1,0 +1,694 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { FeelingSlider } from "@/components/feeling-slider"
+import { Copy, Check } from "lucide-react"
+import { generateToken } from "@/lib/utils"
+import type { Event } from "@/types"
+
+interface EventPageClientProps {
+  event: Event
+  responseCount: number
+}
+
+interface OtherResponse {
+  x_value: number
+  y_value: number
+}
+
+type AvailabilityStatus = "can" | "cannot" | "later" | null
+
+export default function EventPageClient({ event, responseCount }: EventPageClientProps) {
+  // デバッグ: responseCountの値を確認
+  useEffect(() => {
+    console.log('responseCount:', responseCount)
+  }, [responseCount])
+
+  const [score, setScore] = useState(0)
+  const [xValue, setXValue] = useState(0)
+  const [yValue, setYValue] = useState(50)
+  const [availabilityStatus, setAvailabilityStatus] = useState<AvailabilityStatus>(null)
+  const [email, setEmail] = useState("")
+  const [isConfirmed, setIsConfirmed] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [editLink, setEditLink] = useState("")
+  const [copied, setCopied] = useState(false)
+  const [otherResponses, setOtherResponses] = useState<OtherResponse[]>([])
+  const [showMatrix, setShowMatrix] = useState(false)
+  const [isCompact, setIsCompact] = useState(false)
+
+  // コンパクトモード判定（メッセージアプリ内で開いた場合）
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const userAgent = navigator.userAgent.toLowerCase()
+    const isInApp = userAgent.includes('line') || 
+                    userAgent.includes('messenger') || 
+                    userAgent.includes('fban') ||
+                    (typeof window !== 'undefined' && window.location !== window.parent.location) // iframe内かどうか
+    
+    setIsCompact(isInApp)
+    
+    // LINE Webviewの場合、高さを調整
+    if (userAgent.includes('line')) {
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'resize', height: document.body.scrollHeight }, '*')
+      }
+    }
+  }, [])
+
+  // 他の人の回答を取得（送信後）
+  useEffect(() => {
+    if (submitted) {
+      const fetchOtherResponses = async () => {
+        try {
+          const response = await fetch(`/api/responses/${event.id}`)
+          if (response.ok) {
+            const data = await response.json()
+            // 自分の回答を除外（xValue, yValueが一致するもの）
+            const filtered = (data.data || []).filter(
+              (r: OtherResponse) => !(r.x_value === xValue && r.y_value === yValue)
+            )
+            setOtherResponses(filtered)
+          }
+        } catch (error) {
+          console.error('Failed to fetch other responses:', error)
+        }
+      }
+      // 少し遅延させてから取得（自分の回答がDBに保存されるのを待つ）
+      const timer = setTimeout(() => {
+        fetchOtherResponses()
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [submitted, event.id, xValue, yValue])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!event) return
+
+    // バリデーション: 興味の度合い（xValue）が必須
+    if (xValue === 0) {
+      alert('興味の度合いを選択してください。')
+      return
+    }
+    
+    // バリデーション: 参加の可否が必須
+    if (availabilityStatus === null) {
+      alert('参加の可否を選択してください。')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    const token = generateToken()
+
+    // 三択の状態をyValueに変換（後方互換性のため）
+    let calculatedYValue = 50 // デフォルト
+    if (availabilityStatus === "can") calculatedYValue = 100
+    else if (availabilityStatus === "cannot") calculatedYValue = 0
+    else if (availabilityStatus === "later") calculatedYValue = 50
+
+    const response = await fetch('/api/responses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_id: event.id,
+        score,
+        edit_token: token,
+        is_confirmed: isConfirmed,
+        x_value: xValue,
+        y_value: calculatedYValue,
+      }),
+    })
+
+    if (response.ok) {
+      const link = `${window.location.origin}/r/${token}`
+      setEditLink(link)
+      // 送信後にマトリクスを表示
+      setShowMatrix(true)
+      setSubmitted(true)
+      
+      // メールも同時に送信
+      if (email) {
+        await fetch('/api/responses/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            edit_token: token,
+            email,
+          }),
+        })
+      }
+    } else {
+      const errorData = await response.json().catch(() => ({}))
+      console.error('Failed to submit response:', errorData)
+      alert('送信に失敗しました。もう一度お試しください。')
+    }
+    setIsSubmitting(false)
+  }
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(editLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="mx-auto max-w-2xl py-8">
+          <Card className="border-border/40 shadow-md">
+            <CardHeader className="space-y-4 pb-6">
+              <div className="mb-2 flex size-14 items-center justify-center rounded-full bg-primary/5 ring-1 ring-primary/10 backdrop-blur-sm">
+                <Check className="size-7 text-primary" strokeWidth={1.5} />
+              </div>
+              <CardTitle className="text-balance text-2xl font-light tracking-wide md:text-3xl">
+                気持ちを保存しました
+              </CardTitle>
+              <CardDescription className="text-pretty text-base leading-relaxed">
+                応募内容はいつでも変更可能です。
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-8">
+              {/* マトリクス表示（送信後は常に表示） */}
+              <div className="flex flex-col gap-6 rounded-2xl border border-border/50 bg-muted/20 backdrop-blur-sm p-7 shadow-md">
+                <Label className="text-base font-light">みんなの気持ち</Label>
+                <FeelingSlider
+                  value={score}
+                  onChange={setScore}
+                  showMatrix={true}
+                  otherResponses={otherResponses}
+                  xValue={xValue}
+                  yValue={yValue}
+                  onXChange={setXValue}
+                  onYChange={setYValue}
+                  availabilityStatus={availabilityStatus}
+                  onAvailabilityChange={setAvailabilityStatus}
+                  disabled={false}
+                />
+              </div>
+
+              <div className="flex flex-col gap-4 rounded-2xl border border-border/40 bg-muted/30 backdrop-blur-sm p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-normal">更新用リンク</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={copyToClipboard}
+                    className="h-9 gap-2 font-light hover:bg-background/80"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="size-4" strokeWidth={1.5} />
+                        <span className="text-xs">コピー済み</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-4" strokeWidth={1.5} />
+                        <span className="text-xs">コピー</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <code className="text-pretty break-all rounded-xl bg-background/80 p-4 font-sans text-xs leading-relaxed">
+                  {editLink}
+                </code>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  このリンクを保存すると、後から気持ちを更新できます
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-4 rounded-2xl border border-primary/20 bg-primary/[0.05] backdrop-blur-sm p-6 shadow-md">
+                <p className="text-sm font-light leading-relaxed text-foreground">
+                  イベントが近づいたら、また気持ちを聞きにきます
+                </p>
+                <p className="text-xs leading-relaxed text-muted-foreground font-light">
+                  {email ? "メールでリマインドをお送りします" : "更新用リンクをブックマークしておくと便利です"}
+                </p>
+              </div>
+
+              <Button asChild size="lg" className="w-full font-light shadow-md hover:shadow-lg">
+                <a href={editLink}>今すぐ更新する</a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // コンパクトモード（メッセージアプリ内）
+  if (isCompact) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center space-y-6">
+            <h1 className="text-lg font-light leading-tight tracking-wide">{event.title}</h1>
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2 py-0.5 shadow-sm">
+                <span className="text-sm font-bold text-primary">
+                  {responseCount}
+                </span>
+                <span className="text-[10px] font-medium text-foreground">
+                  人がスライドした
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="rounded-2xl border border-border/50 bg-muted/25 backdrop-blur-sm p-6 shadow-md">
+              <FeelingSlider
+                value={score}
+                onChange={setScore}
+                disabled={isSubmitting}
+                showMatrix={false}
+                xValue={xValue}
+                yValue={yValue}
+                onXChange={setXValue}
+                onYChange={setYValue}
+                availabilityStatus={availabilityStatus}
+                onAvailabilityChange={setAvailabilityStatus}
+              />
+            </div>
+
+            {/* カスタムコンテンツまたはデフォルトの注意書き */}
+            {(() => {
+              if (!event.public_page_content) {
+                return (
+                  <div className="space-y-2 text-xs text-muted-foreground/70 text-center font-light">
+                    <p>応募内容はいつでも変更可能です。</p>
+                    <p>他の参加者には見えない完全匿名性</p>
+                  </div>
+                )
+              }
+
+              try {
+                const items = JSON.parse(event.public_page_content)
+                if (Array.isArray(items) && items.length > 0) {
+                  return (
+                    <div className="space-y-3">
+                      {items
+                        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                        .map((item: any) => {
+                          if (item.type === 'select') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="space-y-2"
+                              >
+                                {item.content && (
+                                  <p className="text-xs font-medium text-foreground text-center mb-2">
+                                    {item.content}
+                                  </p>
+                                )}
+                                <div className="space-y-2">
+                                  {item.options?.map((option: string, idx: number) => (
+                                    <label
+                                      key={idx}
+                                      className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-background/50 cursor-pointer hover:bg-background/80"
+                                    >
+                                      <input
+                                        type="radio"
+                                        name={`select-${item.id}`}
+                                        className="size-4"
+                                        disabled
+                                      />
+                                      <span className="text-xs font-light text-foreground">{option}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          } else if (item.type === 'checkbox') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="space-y-2"
+                              >
+                                {item.content && (
+                                  <p className="text-xs font-medium text-foreground text-center mb-2">
+                                    {item.content}
+                                  </p>
+                                )}
+                                <div className="space-y-2">
+                                  {item.options?.map((option: string, idx: number) => (
+                                    <label
+                                      key={idx}
+                                      className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-background/50 cursor-pointer hover:bg-background/80"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        name={`checkbox-${item.id}`}
+                                        className="size-4"
+                                        disabled
+                                      />
+                                      <span className="text-xs font-light text-foreground">{option}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            )
+                          } else if (item.type === 'text_input') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="space-y-2"
+                              >
+                                {item.label && (
+                                  <Label className="text-xs font-medium text-foreground">
+                                    {item.label}
+                                    {item.required && <span className="text-destructive ml-1">*</span>}
+                                  </Label>
+                                )}
+                                <Input
+                                  placeholder={item.placeholder || ''}
+                                  disabled
+                                  className="font-light text-xs"
+                                />
+                              </div>
+                            )
+                          } else if (item.type === 'textarea') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="space-y-2"
+                              >
+                                {item.label && (
+                                  <Label className="text-xs font-medium text-foreground">
+                                    {item.label}
+                                    {item.required && <span className="text-destructive ml-1">*</span>}
+                                  </Label>
+                                )}
+                                <textarea
+                                  placeholder={item.placeholder || ''}
+                                  disabled
+                                  rows={3}
+                                  className="flex min-h-[80px] w-full rounded-xl border border-border/50 bg-background/80 px-3 py-2 text-xs font-light ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                                />
+                              </div>
+                            )
+                          } else if (item.type === 'notice') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-3 text-xs text-foreground text-center font-light"
+                              >
+                                {item.content}
+                              </div>
+                            )
+                          } else if (item.type === 'html') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="text-xs text-muted-foreground/70 text-center font-light"
+                                dangerouslySetInnerHTML={{ __html: item.content }}
+                              />
+                            )
+                          } else if (item.type === 'notice') {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-3 text-xs text-foreground text-center font-light"
+                              >
+                                {item.content}
+                              </div>
+                            )
+                          } else {
+                            return (
+                              <div
+                                key={item.id || Math.random()}
+                                className="space-y-2"
+                              >
+                                {item.title && (
+                                  <p className="text-xs font-medium text-foreground text-center mb-2">
+                                    {item.title}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground/70 text-center font-light">
+                                  {item.content}
+                                </p>
+                              </div>
+                            )
+                          }
+                        })}
+                    </div>
+                  )
+                }
+              } catch {
+                // JSONパースに失敗した場合、旧形式（単一のHTML文字列）として扱う
+                return (
+                  <div
+                    className="space-y-2 text-xs text-muted-foreground/70 text-center font-light"
+                    dangerouslySetInnerHTML={{ __html: event.public_page_content }}
+                  />
+                )
+              }
+
+              return null
+            })()}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-light shadow-md hover:shadow-lg hover:bg-primary/85 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "送信中..." : "今の気持ちを保存する"}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // 通常モード（ブラウザ）- 埋め込み版の内容を反映
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="space-y-6 text-center">
+          <h1 className="text-xl font-light leading-tight tracking-wide">{event.title}</h1>
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 shadow-sm">
+              <span className="text-base font-bold text-primary">
+                {responseCount}
+              </span>
+              <span className="text-xs font-medium text-foreground">
+                人がスライドした
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* スライダー */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="rounded-2xl border border-border/50 bg-muted/25 backdrop-blur-sm p-6 shadow-md">
+            <FeelingSlider
+              value={score}
+              onChange={setScore}
+              disabled={isSubmitting}
+              showMatrix={false}
+              xValue={xValue}
+              yValue={yValue}
+              onXChange={setXValue}
+              onYChange={setYValue}
+              availabilityStatus={availabilityStatus}
+              onAvailabilityChange={setAvailabilityStatus}
+            />
+          </div>
+
+          {/* カスタムコンテンツまたはデフォルトの注意書き */}
+          {(() => {
+            if (!event.public_page_content) {
+              return (
+                <div className="space-y-2 text-xs text-muted-foreground/70 text-center font-light">
+                  <p>応募内容はいつでも変更可能です。</p>
+                  <p>他の参加者には見えない完全匿名性</p>
+                </div>
+              )
+            }
+
+            try {
+              const items = JSON.parse(event.public_page_content)
+              if (Array.isArray(items) && items.length > 0) {
+                return (
+                  <div className="space-y-3">
+                    {items
+                      .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                      .map((item: any) => {
+                        if (item.type === 'select') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="space-y-2"
+                            >
+                              {item.content && (
+                                <p className="text-xs font-medium text-foreground text-center mb-2">
+                                  {item.content}
+                                </p>
+                              )}
+                              <div className="space-y-2">
+                                {item.options?.map((option: string, idx: number) => (
+                                  <label
+                                    key={idx}
+                                    className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-background/50 cursor-pointer hover:bg-background/80"
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={`select-${item.id}`}
+                                      className="size-4"
+                                      disabled
+                                    />
+                                    <span className="text-xs font-light text-foreground">{option}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        } else if (item.type === 'checkbox') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="space-y-2"
+                            >
+                              {item.content && (
+                                <p className="text-xs font-medium text-foreground text-center mb-2">
+                                  {item.content}
+                                </p>
+                              )}
+                              <div className="space-y-2">
+                                {item.options?.map((option: string, idx: number) => (
+                                  <label
+                                    key={idx}
+                                    className="flex items-center gap-2 p-2 rounded-lg border border-border/50 bg-background/50 cursor-pointer hover:bg-background/80"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      name={`checkbox-${item.id}`}
+                                      className="size-4"
+                                      disabled
+                                    />
+                                    <span className="text-xs font-light text-foreground">{option}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        } else if (item.type === 'text_input') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="space-y-2"
+                            >
+                              {item.label && (
+                                <Label className="text-xs font-medium text-foreground">
+                                  {item.label}
+                                  {item.required && <span className="text-destructive ml-1">*</span>}
+                                </Label>
+                              )}
+                              <Input
+                                placeholder={item.placeholder || ''}
+                                disabled
+                                className="font-light text-xs"
+                              />
+                            </div>
+                          )
+                        } else if (item.type === 'textarea') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="space-y-2"
+                            >
+                              {item.label && (
+                                <Label className="text-xs font-medium text-foreground">
+                                  {item.label}
+                                  {item.required && <span className="text-destructive ml-1">*</span>}
+                                </Label>
+                              )}
+                              <textarea
+                                placeholder={item.placeholder || ''}
+                                disabled
+                                rows={3}
+                                className="flex min-h-[80px] w-full rounded-xl border border-border/50 bg-background/80 px-3 py-2 text-xs font-light ring-offset-background placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                              />
+                            </div>
+                          )
+                        } else if (item.type === 'notice') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-3 text-xs text-foreground text-center font-light"
+                            >
+                              {item.content}
+                            </div>
+                          )
+                        } else if (item.type === 'html') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="text-xs text-muted-foreground/70 text-center font-light"
+                              dangerouslySetInnerHTML={{ __html: item.content }}
+                            />
+                          )
+                        } else if (item.type === 'notice') {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 backdrop-blur-sm p-3 text-xs text-foreground text-center font-light"
+                            >
+                              {item.content}
+                            </div>
+                          )
+                        } else {
+                          return (
+                            <div
+                              key={item.id || Math.random()}
+                              className="space-y-2"
+                            >
+                              {item.title && (
+                                <p className="text-xs font-medium text-foreground text-center mb-2">
+                                  {item.title}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground/70 text-center font-light">
+                                {item.content}
+                              </p>
+                            </div>
+                          )
+                        }
+                      })}
+                  </div>
+                )
+              }
+            } catch {
+              // JSONパースに失敗した場合、旧形式（単一のHTML文字列）として扱う
+              return (
+                <div
+                  className="space-y-2 text-xs text-muted-foreground/70 text-center font-light"
+                  dangerouslySetInnerHTML={{ __html: event.public_page_content }}
+                />
+              )
+            }
+
+            return null
+          })()}
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-light shadow-md hover:shadow-lg hover:bg-primary/85 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "送信中..." : "今の気持ちを保存する"}
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
