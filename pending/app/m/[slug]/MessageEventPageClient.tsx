@@ -249,7 +249,7 @@ export default function MessageEventPageClient({ event, responseCount }: Message
                         />
                       </div>
                       <p className="text-xs text-muted-foreground font-light">
-                        {event.title.includes('鍋パ') ? 1 : responseCount}人の平均
+                        {responseCount}人の平均
                       </p>
                     </div>
                   </div>

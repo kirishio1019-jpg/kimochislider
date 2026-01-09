@@ -520,7 +520,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 shadow-sm">
               <span className="text-base font-bold text-primary">
-                {event.title.includes('鍋パ') ? 1 : responseCount}
+                {responseCount}
               </span>
               <span className="text-xs font-medium text-foreground">
                 人がスライドした
