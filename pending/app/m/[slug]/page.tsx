@@ -27,10 +27,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // サーバーサイドでは環境変数を使用、なければデフォルト値を使用
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-name.vercel.app'
   const pageUrl = `${appUrl}/m/${slug}`
+  
+  // ユニークなユーザーの回答数を取得（OGP画像用）
+  const { data: responses } = await supabase
+    .from('responses')
+    .select('user_id')
+    .eq('event_id', event.id)
+
+  let uniqueCount = 0
+  if (responses) {
+    const userIds = new Set<string>()
+    for (const response of responses) {
+      if (response.user_id) {
+        userIds.add(response.user_id)
+      } else {
+        // 匿名ユーザーは各レコードを1つとしてカウント
+        uniqueCount++
+      }
+    }
+    uniqueCount += userIds.size
+  }
+  
   // OGP画像URL（プレゼントUI風のデザイン）- 絶対URLで生成
   // Next.jsのファイルベースメタデータ（opengraph-image.tsx）を使用する場合と、
   // APIエンドポイント（/api/og）を使用する場合の両方に対応
-  const ogImageUrl = `${appUrl}/api/og?title=${encodeURIComponent(event.title)}&slug=${encodeURIComponent(slug)}`
+  const ogImageUrl = `${appUrl}/api/og?title=${encodeURIComponent(event.title)}&slug=${encodeURIComponent(slug)}&count=${uniqueCount}`
   
   // デバッグ用ログ
   console.log('[OGP Metadata]', {

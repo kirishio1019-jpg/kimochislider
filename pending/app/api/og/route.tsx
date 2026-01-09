@@ -10,11 +10,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(url)
     const title = searchParams.get('title') || 'イベント'
     const slug = searchParams.get('slug') || ''
+    const count = searchParams.get('count') || '0'
 
     // デバッグ用ログ
     console.log('[OG Image] Generating image for:', { 
       title, 
       slug,
+      count,
       url,
       userAgent: request.headers.get('user-agent'),
     })
@@ -204,10 +206,44 @@ export async function GET(request: NextRequest) {
                 textAlign: 'center',
                 letterSpacing: '0.01em',
                 textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+                marginBottom: 8,
               }}
             >
               きもちスライダーで気持ちを共有しましょう
             </p>
+            {/* 参加者数 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginTop: 12,
+                padding: '12px 24px',
+                background: 'rgba(255, 255, 255, 0.7)',
+                borderRadius: 24,
+                border: '2px solid rgba(255, 107, 107, 0.3)',
+                boxShadow: '0 4px 12px rgba(255, 107, 107, 0.2)',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 32,
+                  fontWeight: 700,
+                  color: '#ff6b6b',
+                }}
+              >
+                {count}
+              </span>
+              <span
+                style={{
+                  fontSize: 24,
+                  fontWeight: 500,
+                  color: '#8b4513',
+                }}
+              >
+                人がスライド済み
+              </span>
+            </div>
           </div>
         </div>
       ),
