@@ -52,6 +52,7 @@ export default function EventManageClient({
   const [isSaving, setIsSaving] = useState(false)
   const [filterCategory, setFilterCategory] = useState<string | null>(null)
   const [copiedLink, setCopiedLink] = useState(false)
+  const [copiedMessageLink, setCopiedMessageLink] = useState(false)
   const [origin, setOrigin] = useState<string>('')
 
   useEffect(() => {
@@ -108,6 +109,7 @@ export default function EventManageClient({
   const startDate = new Date(event.start_at)
   const endDate = event.end_at ? new Date(event.end_at) : null
   const publicUrl = origin ? `${origin}/e/${event.slug}` : ''
+  const messageUrl = origin ? `${origin}/m/${event.slug}` : ''
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -394,6 +396,35 @@ export default function EventManageClient({
                   <code className="truncate font-sans text-xs text-muted-foreground">{publicUrl || '読み込み中...'}</code>
                   <p className="text-xs text-muted-foreground mt-1 font-light">
                     メッセージアプリ内で開くと自動的にコンパクト表示になります。
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-4 rounded-2xl border border-border/50 bg-muted/20 p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-light text-foreground">メッセージ用URL</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => copyToClipboard(messageUrl, setCopiedMessageLink)}
+                      className="h-9 gap-2 font-light"
+                      disabled={!messageUrl}
+                    >
+                      {copiedMessageLink ? (
+                        <>
+                          <Check className="size-4" strokeWidth={1.5} />
+                          <span className="text-xs">コピー済み</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="size-4" strokeWidth={1.5} />
+                          <span className="text-xs">コピー</span>
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <code className="truncate font-sans text-xs text-muted-foreground">{messageUrl || '読み込み中...'}</code>
+                  <p className="text-xs text-muted-foreground mt-1 font-light">
+                    LINEやSlackなどのメッセージアプリで共有すると、プレビューカードが表示されます。
                   </p>
                 </div>
 
