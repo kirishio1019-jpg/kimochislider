@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Settings, Calendar, Users, ArrowLeft } from "lucide-react"
+import { Plus, Settings, Calendar, Users, ArrowLeft, Trash2 } from "lucide-react"
 import type { Event } from "@/types"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import { createClient } from "@/lib/supabase/client"
@@ -22,6 +22,7 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
   const router = useRouter()
   const supabase = createClient()
   const [eventsWithStats, setEventsWithStats] = useState<EventWithStats[]>([])
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -47,6 +48,32 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
       fetchStats()
     }
   }, [events, supabase])
+
+  const handleDeleteEvent = async (eventId: string, eventTitle: string) => {
+    if (!confirm(`「${eventTitle}」を削除してもよろしいですか？\n\nこの操作は取り消せません。イベントとすべての回答が削除されます。`)) {
+      return
+    }
+
+    setDeletingEventId(eventId)
+    try {
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'イベントの削除に失敗しました')
+      }
+
+      // 削除成功後、ページをリロード
+      router.refresh()
+    } catch (error) {
+      console.error('Delete error:', error)
+      alert(error instanceof Error ? error.message : 'イベントの削除に失敗しました')
+    } finally {
+      setDeletingEventId(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
@@ -128,18 +155,33 @@ export default function MyEventsClient({ events, user }: MyEventsClientProps) {
                         <Users className="size-4" />
                         <span>回答: {responseCount}人</span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/my-events/${event.id}`)
-                        }}
-                        className="gap-2 font-light"
-                      >
-                        <Settings className="size-4" />
-                        管理
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            router.push(`/my-events/${event.id}`)
+                          }}
+                          className="gap-2 font-light"
+                        >
+                          <Settings className="size-4" />
+                          管理
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteEvent(event.id, event.title)
+                          }}
+                          disabled={deletingEventId === event.id}
+                          className="gap-2 font-light text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="size-4" />
+                          {deletingEventId === event.id ? '削除中...' : '削除'}
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,6 +1,89 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ event_id: string }> }
+) {
+  try {
+    const { event_id } = await params
+    const supabase = await createClient()
+
+    // 認証されたユーザーを取得
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // イベントの所有者を確認
+    const { data: event, error: fetchError } = await supabase
+      .from('events')
+      .select('id')
+      .eq('id', event_id)
+      .single()
+
+    if (fetchError || !event) {
+      return NextResponse.json(
+        { error: 'イベントが見つかりません' },
+        { status: 404 }
+      )
+    }
+
+    // user_idカラムが存在する場合は所有者チェック
+    try {
+      const { data: eventWithUser, error: userCheckError } = await supabase
+        .from('events')
+        .select('id, user_id')
+        .eq('id', event_id)
+        .single()
+
+      if (!userCheckError && eventWithUser?.user_id) {
+        if (eventWithUser.user_id !== user.id) {
+          return NextResponse.json(
+            { error: 'このイベントを削除する権限がありません' },
+            { status: 403 }
+          )
+        }
+      }
+    } catch {
+      // user_idカラムが存在しない場合はスキップ（後方互換性のため）
+    }
+
+    // イベントを削除（CASCADEでresponsesも削除される）
+    const { error: deleteError } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', event_id)
+
+    if (deleteError) {
+      console.error('Supabase delete error:', deleteError)
+      return NextResponse.json(
+        { 
+          error: 'イベントの削除に失敗しました',
+          details: deleteError.message,
+          code: deleteError.code
+        },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('API route error:', error)
+    return NextResponse.json(
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    )
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ event_id: string }> }
