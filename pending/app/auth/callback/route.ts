@@ -49,8 +49,11 @@ export async function GET(request: NextRequest) {
 
       console.log('[Auth Callback] Exchange successful, user:', data.user?.id)
       
-      // 認証後にマイページにリダイレクト（絶対URLを使用）
-      return NextResponse.redirect(new URL('/my-events', appUrl).toString())
+      // URLパラメータからリダイレクト先を取得
+      const redirectPath = requestUrl.searchParams.get('redirect') || '/my-events'
+      
+      // 認証後にリダイレクト先（またはマイページ）にリダイレクト（絶対URLを使用）
+      return NextResponse.redirect(new URL(redirectPath, appUrl).toString())
     }
 
     // コードがない場合でも、既存のセッションを確認

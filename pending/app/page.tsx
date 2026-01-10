@@ -133,10 +133,18 @@ export default function HomePage() {
         console.log('🔵 [Network Debug] Will request:', authEndpoint)
         console.log('🔵 [Network Debug] Check Network tab for this request')
         
+        // URLパラメータからリダイレクト先を取得
+        const urlParams = new URLSearchParams(window.location.search)
+        const redirectPath = urlParams.get('redirect')
+        // リダイレクト先がある場合は、認証コールバックに渡す
+        const finalRedirectUrl = redirectPath 
+          ? `${appUrl}/auth/callback?redirect=${encodeURIComponent(redirectPath)}`
+          : redirectUrl
+        
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: redirectUrl,
+            redirectTo: finalRedirectUrl,
             queryParams: {
               access_type: 'offline',
               prompt: 'consent',

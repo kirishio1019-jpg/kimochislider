@@ -14,7 +14,8 @@ export default async function EventPage({ params }: PageProps) {
   const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    redirect('/')
+    // ログイン後に元のページに戻れるように、リダイレクトURLを設定
+    redirect(`/?redirect=/e/${slug}`)
   }
 
   const { data: event, error } = await supabase
