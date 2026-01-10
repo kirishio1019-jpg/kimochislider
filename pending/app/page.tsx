@@ -60,6 +60,10 @@ export default function HomePage() {
       const appUrl = getAppUrl()
       const redirectUrl = `${appUrl}/auth/callback`
       
+      // Supabase設定の確認
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      
       console.log('=== Google Login Debug ===')
       console.log('App URL:', appUrl)
       console.log('Redirect URL:', redirectUrl)
@@ -67,7 +71,26 @@ export default function HomePage() {
       console.log('Window location hostname:', window.location.hostname)
       console.log('Window location href:', window.location.href)
       console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
+      console.log('--- Supabase Configuration ---')
+      console.log('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl)
+      console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'NOT SET')
+      console.log('Supabase URL valid:', supabaseUrl && supabaseUrl.startsWith('https://') && supabaseUrl.includes('.supabase.co'))
       console.log('========================')
+      
+      // Supabase設定の検証
+      if (!supabaseUrl || !supabaseUrl.startsWith('https://') || !supabaseUrl.includes('.supabase.co')) {
+        const errorMsg = `Supabase URLが正しく設定されていません。\n\n現在の値: ${supabaseUrl || 'NOT SET'}\n\nVercel Dashboardで環境変数 NEXT_PUBLIC_SUPABASE_URL を確認してください。`
+        console.error(errorMsg)
+        alert(errorMsg)
+        return
+      }
+      
+      if (!supabaseAnonKey || supabaseAnonKey.length < 50) {
+        const errorMsg = `Supabase Anon Keyが正しく設定されていません。\n\nVercel Dashboardで環境変数 NEXT_PUBLIC_SUPABASE_ANON_KEY を確認してください。`
+        console.error(errorMsg)
+        alert(errorMsg)
+        return
+      }
       
       // リダイレクトURLの検証
       if (!redirectUrl.startsWith('https://') && !redirectUrl.startsWith('http://localhost')) {
@@ -76,6 +99,12 @@ export default function HomePage() {
         alert(errorMsg)
         return
       }
+      
+      console.log('=== Attempting OAuth Sign In ===')
+      console.log('Provider: google')
+      console.log('Redirect To:', redirectUrl)
+      console.log('Supabase Auth Endpoint:', `${supabaseUrl}/auth/v1/authorize`)
+      console.log('===============================')
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -102,13 +131,45 @@ export default function HomePage() {
         if (error.message.includes('OAuth secret') || error.message.includes('provider') || error.message.includes('not enabled')) {
           alert('Google認証が設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → Providers → Google を有効化\n2. Client ID と Client Secret を入力\n\n詳細は GOOGLE_AUTH_SETUP.md を参照してください。')
         } else if (error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404 || error.name === 'AuthApiError') {
-          const setupMessage = `⚠️ リダイレクトURLが設定されていません\n\n現在のURL: ${appUrl}\n必要なリダイレクトURL: ${redirectUrl}\n\n【設定手順】\n1. Supabase Dashboardにアクセス\n2. Authentication → URL Configuration を開く\n3. Redirect URLs に以下を追加：\n   ${redirectUrl}\n4. Site URL を設定：\n   ${appUrl}\n5. Save をクリック\n6. 30秒待ってから再度お試しください\n\n詳細は FIX_GOOGLE_LOGIN_404.md を参照してください。`
-          alert(setupMessage)
+          // より詳細な診断情報を提供
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+          const diagnosticInfo = `
+【診断情報】
+- Supabase URL: ${supabaseUrl || 'NOT SET'}
+- App URL: ${appUrl}
+- Redirect URL: ${redirectUrl}
+- Error ID: ${error.status || 'N/A'}
+- Error Message: ${error.message}
+
+【考えられる原因】
+1. Supabase DashboardでリダイレクトURLが設定されていない
+2. Supabase URLが間違っている
+3. Google OAuth Providerが有効化されていない
+
+【確認手順】
+1. Supabase Dashboard → Authentication → URL Configuration
+   - Redirect URLs に以下を追加: ${redirectUrl}
+   - Site URL を設定: ${appUrl}
+2. Supabase Dashboard → Authentication → Providers → Google
+   - Google Providerが有効化されているか確認
+   - Client ID と Client Secret が設定されているか確認
+3. Vercel Dashboard → Settings → Environment Variables
+   - NEXT_PUBLIC_SUPABASE_URL が正しいか確認
+   - NEXT_PUBLIC_SUPABASE_ANON_KEY が設定されているか確認
+
+詳細は FIX_GOOGLE_LOGIN_404.md を参照してください。
+          `.trim()
+          
+          alert(`⚠️ 404エラーが発生しました\n\n${diagnosticInfo}`)
           console.error('=== Supabase Redirect URL Setup Required ===')
           console.error('Current App URL:', appUrl)
           console.error('Required Redirect URL:', redirectUrl)
-          console.error('Full redirect URL:', redirectUrl)
-          console.error('Please add this URL to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs')
+          console.error('Supabase URL:', supabaseUrl)
+          console.error('Error Details:', JSON.stringify(error, null, 2))
+          console.error('Please check:')
+          console.error('1. Supabase Dashboard → Authentication → URL Configuration → Redirect URLs')
+          console.error('2. Supabase Dashboard → Authentication → Providers → Google')
+          console.error('3. Vercel Dashboard → Settings → Environment Variables')
           console.error('============================================')
           
           // クリップボードにコピーできるようにする
