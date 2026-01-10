@@ -111,32 +111,114 @@ export default function HomePage() {
       console.log('🔵 Supabase Auth Endpoint:', `${supabaseUrl}/auth/v1/authorize`)
       console.log('🔵 ===============================')
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      })
+      // リトライロジックを追加
+      let lastError: any = null
+      let retryCount = 0
+      const maxRetries = 2
       
-      if (error) {
+      while (retryCount <= maxRetries) {
+        if (retryCount > 0) {
+          console.log(`🟡 Retry attempt ${retryCount}/${maxRetries}...`)
+          // リトライ前に少し待つ
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+        
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+          },
+        })
+        
+        if (error) {
+          lastError = error
+          console.error(`🔴 Attempt ${retryCount + 1} failed:`, error.message)
+          
+          // 404エラーの場合のみリトライ
+          if ((error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404) && retryCount < maxRetries) {
+            retryCount++
+            continue
+          }
+          
+          // リトライ回数を超えた場合、または404以外のエラーの場合
+          break
+        }
+        
+        // 成功した場合
+        if (data?.url) {
+          console.log('🟢 OAuth URL generated successfully:', data.url)
+          // OAuth URLのパラメータを解析
+          try {
+            const urlObj = new URL(data.url)
+            console.log('🟢 OAuth URL Analysis:')
+            console.log('🟢 - Host:', urlObj.host)
+            console.log('🟢 - Pathname:', urlObj.pathname)
+            console.log('🟢 - Redirect_to param (encoded):', urlObj.searchParams.get('redirect_to'))
+            console.log('🟢 - Redirect_to param (decoded):', decodeURIComponent(urlObj.searchParams.get('redirect_to') || ''))
+            console.log('🟢 - Provider param:', urlObj.searchParams.get('provider'))
+            console.log('🟢 - Code challenge:', urlObj.searchParams.get('code_challenge'))
+            console.log('🟢 - Code challenge method:', urlObj.searchParams.get('code_challenge_method'))
+            
+            // リダイレクトURLが正しくエンコードされているか確認
+            const decodedRedirectTo = decodeURIComponent(urlObj.searchParams.get('redirect_to') || '')
+            console.log('🟢 - Expected redirect URL:', redirectUrl)
+            console.log('🟢 - Actual redirect URL in OAuth:', decodedRedirectTo)
+            console.log('🟢 - Redirect URLs match:', decodedRedirectTo === redirectUrl)
+            
+            if (decodedRedirectTo !== redirectUrl) {
+              console.warn('🟡 WARNING: Redirect URL mismatch!')
+              console.warn('🟡 Expected:', redirectUrl)
+              console.warn('🟡 Actual:', decodedRedirectTo)
+            }
+          } catch (e) {
+            console.error('🔴 Failed to parse OAuth URL:', e)
+          }
+          
+          // OAuth URLの検証
+          if (!data.url.startsWith('https://')) {
+            console.error('🔴 OAuth URL does not start with https://')
+            alert('OAuth URLが無効です。Supabaseの設定を確認してください。')
+            return
+          }
+          
+          // リダイレクトを実行
+          console.log('🟢 Redirecting to OAuth provider in 100ms...')
+          setTimeout(() => {
+            console.log('🟢 Executing redirect now...')
+            window.location.href = data.url
+          }, 100)
+          return
+        }
+        
+        // data.urlがない場合もエラーとして扱う
+        break
+      }
+      
+      // すべてのリトライが失敗した場合
+      const error = lastError
+      
+      if (error || lastError) {
+        const finalError = error || lastError
+        
         console.error('🔴 ========================================')
         console.error('🔴 === OAuth Error Details ===')
-        console.error('🔴 Error:', error)
-        console.error('🔴 Error name:', error.name)
-        console.error('🔴 Error message:', error.message)
-        console.error('🔴 Error status:', error.status)
-        console.error('🔴 Error cause:', error.cause)
-        console.error('🔴 Full error object:', JSON.stringify(error, null, 2))
+        console.error('🔴 Error:', finalError)
+        console.error('🔴 Error name:', finalError.name)
+        console.error('🔴 Error message:', finalError.message)
+        console.error('🔴 Error status:', finalError.status)
+        console.error('🔴 Error cause:', finalError.cause)
+        console.error('🔴 Full error object:', JSON.stringify(finalError, null, 2))
+        console.error('🔴 Retry attempts:', retryCount)
         console.error('🔴 ========================================')
         
         // より詳細なエラーメッセージを表示
-        if (error.message.includes('OAuth secret') || error.message.includes('provider') || error.message.includes('not enabled')) {
+        if (finalError.message.includes('OAuth secret') || finalError.message.includes('provider') || finalError.message.includes('not enabled')) {
           alert('Google認証が設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → Providers → Google を有効化\n2. Client ID と Client Secret を入力\n\n詳細は GOOGLE_AUTH_SETUP.md を参照してください。')
-        } else if (error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404 || error.name === 'AuthApiError') {
+        } else if (finalError.message.includes('404') || finalError.message.includes('NOT_FOUND') || finalError.status === 404 || finalError.name === 'AuthApiError') {
           // より詳細な診断情報を提供
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
           
@@ -153,45 +235,44 @@ export default function HomePage() {
 - Supabase URL: ${supabaseUrl || 'NOT SET'}
 - App URL: ${appUrl}
 - Redirect URL: ${redirectUrl}
-- Error ID: ${error.status || 'N/A'}
-- Error Message: ${error.message}
-- Error Name: ${error.name || 'N/A'}
+- Error ID: ${finalError.status || 'N/A'}
+- Error Message: ${finalError.message}
+- Error Name: ${finalError.name || 'N/A'}
+- Retry attempts: ${retryCount}
 
-【確実な解決方法】
-Supabase Dashboardでワイルドカードパターンを使用してください：
+【重要な確認事項】
+1. Supabase Dashboard → Authentication → Providers → Google
+   - 「Enabled」がONになっているか確認
+   - 「Client ID」が設定されているか確認
+   - 「Client Secret」が設定されているか確認
 
-1. Supabase Dashboard → Authentication → URL Configuration
-2. 「Redirect URLs」に以下を追加：
-   https://kimochislider.vercel.app/**
-   https://*.vercel.app/**
-   http://localhost:3000/**
-3. 「Site URL」を設定：
-   https://kimochislider.vercel.app
-4. 「Save」をクリック
-5. 30秒待つ
+2. Supabase Dashboard → Authentication → URL Configuration
+   - 「Redirect URLs」に以下が登録されているか確認：
+     https://kimochislider.vercel.app/**
+     または
+     https://kimochislider.vercel.app/auth/callback
+   - 「Site URL」が設定されているか確認：
+     https://kimochislider.vercel.app
 
-【または、正確なURLを再登録】
-1. 「Redirect URLs」の既存のURLをすべて削除
-2. 以下を正確に追加：
-   ${redirectUrl}
-3. 「Site URL」を設定：
-   ${appUrl}
-4. 「Save」をクリック
-5. 30秒待つ
+3. Google Cloud Consoleで確認
+   - OAuth 2.0 Client IDが作成されているか確認
+   - 「承認済みのリダイレクト URI」に以下が登録されているか確認：
+     https://qrypddarrakhckzifaqe.supabase.co/auth/v1/callback
 
 詳細は FINAL_404_FIX.md を参照してください。
           `.trim()
           
-          alert(`⚠️ 404エラーが発生しました\n\n${diagnosticInfo}`)
+          alert(`⚠️ 404エラーが発生しました（${retryCount}回リトライしました）\n\n${diagnosticInfo}`)
           console.error('=== Supabase Redirect URL Setup Required ===')
           console.error('Current App URL:', appUrl)
           console.error('Required Redirect URL:', redirectUrl)
           console.error('Supabase URL:', supabaseUrl)
-          console.error('Error Details:', JSON.stringify(error, null, 2))
+          console.error('Error Details:', JSON.stringify(finalError, null, 2))
           console.error('Please check:')
           console.error('1. Supabase Dashboard → Authentication → URL Configuration → Redirect URLs')
           console.error('2. Supabase Dashboard → Authentication → Providers → Google')
-          console.error('3. Vercel Dashboard → Settings → Environment Variables')
+          console.error('3. Google Cloud Console → OAuth 2.0 Client IDs → Authorized redirect URIs')
+          console.error('4. Vercel Dashboard → Settings → Environment Variables')
           console.error('============================================')
           
           // クリップボードにコピーできるようにする
@@ -203,57 +284,8 @@ Supabase Dashboardでワイルドカードパターンを使用してくださ�
             })
           }
         } else {
-          alert(`ログインに失敗しました。\n\nエラー: ${error.message}\n\n詳細はコンソール（F12）を確認してください。`)
+          alert(`ログインに失敗しました。\n\nエラー: ${finalError.message}\n\n詳細はコンソール（F12）を確認してください。`)
         }
-      } else if (data?.url) {
-        // OAuth URLが正常に生成された場合
-        console.log('🟢 ========================================')
-        console.log('🟢 === OAuth URL Generated Successfully ===')
-        console.log('🟢 OAuth URL:', data.url)
-        console.log('🟢 OAuth URL length:', data.url.length)
-        
-        // OAuth URLのパラメータを解析
-        try {
-          const urlObj = new URL(data.url)
-          console.log('🟢 OAuth URL Analysis:')
-          console.log('🟢 - Host:', urlObj.host)
-          console.log('🟢 - Pathname:', urlObj.pathname)
-          console.log('🟢 - Redirect_to param (encoded):', urlObj.searchParams.get('redirect_to'))
-          console.log('🟢 - Redirect_to param (decoded):', decodeURIComponent(urlObj.searchParams.get('redirect_to') || ''))
-          console.log('🟢 - Provider param:', urlObj.searchParams.get('provider'))
-          console.log('🟢 - Code challenge:', urlObj.searchParams.get('code_challenge'))
-          console.log('🟢 - Code challenge method:', urlObj.searchParams.get('code_challenge_method'))
-          
-          // リダイレクトURLが正しくエンコードされているか確認
-          const decodedRedirectTo = decodeURIComponent(urlObj.searchParams.get('redirect_to') || '')
-          console.log('🟢 - Expected redirect URL:', redirectUrl)
-          console.log('🟢 - Actual redirect URL in OAuth:', decodedRedirectTo)
-          console.log('🟢 - Redirect URLs match:', decodedRedirectTo === redirectUrl)
-          
-          if (decodedRedirectTo !== redirectUrl) {
-            console.warn('🟡 WARNING: Redirect URL mismatch!')
-            console.warn('🟡 Expected:', redirectUrl)
-            console.warn('🟡 Actual:', decodedRedirectTo)
-          }
-        } catch (e) {
-          console.error('🔴 Failed to parse OAuth URL:', e)
-        }
-        
-        console.log('🟢 ========================================')
-        
-        // OAuth URLの検証
-        if (!data.url.startsWith('https://')) {
-          console.error('🔴 OAuth URL does not start with https://')
-          alert('OAuth URLが無効です。Supabaseの設定を確認してください。')
-          return
-        }
-        
-        // リダイレクトを実行
-        console.log('🟢 Redirecting to OAuth provider in 100ms...')
-        setTimeout(() => {
-          console.log('🟢 Executing redirect now...')
-          window.location.href = data.url
-        }, 100)
         // ブラウザでOAuth URLにリダイレクト（通常は自動的に行われる）
       }
     } catch (err) {
