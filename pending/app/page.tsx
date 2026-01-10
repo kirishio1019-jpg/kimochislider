@@ -208,7 +208,53 @@ export default function HomePage() {
         }
       } else if (data?.url) {
         // OAuth URLが正常に生成された場合
-        console.log('OAuth URL generated successfully:', data.url)
+        console.log('🟢 ========================================')
+        console.log('🟢 === OAuth URL Generated Successfully ===')
+        console.log('🟢 OAuth URL:', data.url)
+        console.log('🟢 OAuth URL length:', data.url.length)
+        
+        // OAuth URLのパラメータを解析
+        try {
+          const urlObj = new URL(data.url)
+          console.log('🟢 OAuth URL Analysis:')
+          console.log('🟢 - Host:', urlObj.host)
+          console.log('🟢 - Pathname:', urlObj.pathname)
+          console.log('🟢 - Redirect_to param (encoded):', urlObj.searchParams.get('redirect_to'))
+          console.log('🟢 - Redirect_to param (decoded):', decodeURIComponent(urlObj.searchParams.get('redirect_to') || ''))
+          console.log('🟢 - Provider param:', urlObj.searchParams.get('provider'))
+          console.log('🟢 - Code challenge:', urlObj.searchParams.get('code_challenge'))
+          console.log('🟢 - Code challenge method:', urlObj.searchParams.get('code_challenge_method'))
+          
+          // リダイレクトURLが正しくエンコードされているか確認
+          const decodedRedirectTo = decodeURIComponent(urlObj.searchParams.get('redirect_to') || '')
+          console.log('🟢 - Expected redirect URL:', redirectUrl)
+          console.log('🟢 - Actual redirect URL in OAuth:', decodedRedirectTo)
+          console.log('🟢 - Redirect URLs match:', decodedRedirectTo === redirectUrl)
+          
+          if (decodedRedirectTo !== redirectUrl) {
+            console.warn('🟡 WARNING: Redirect URL mismatch!')
+            console.warn('🟡 Expected:', redirectUrl)
+            console.warn('🟡 Actual:', decodedRedirectTo)
+          }
+        } catch (e) {
+          console.error('🔴 Failed to parse OAuth URL:', e)
+        }
+        
+        console.log('🟢 ========================================')
+        
+        // OAuth URLの検証
+        if (!data.url.startsWith('https://')) {
+          console.error('🔴 OAuth URL does not start with https://')
+          alert('OAuth URLが無効です。Supabaseの設定を確認してください。')
+          return
+        }
+        
+        // リダイレクトを実行
+        console.log('🟢 Redirecting to OAuth provider in 100ms...')
+        setTimeout(() => {
+          console.log('🟢 Executing redirect now...')
+          window.location.href = data.url
+        }, 100)
         // ブラウザでOAuth URLにリダイレクト（通常は自動的に行われる）
       }
     } catch (err) {
