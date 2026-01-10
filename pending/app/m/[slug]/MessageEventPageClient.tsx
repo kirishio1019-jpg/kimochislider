@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FeelingSlider } from "@/components/feeling-slider"
-import { Calendar, MapPin, Clock, User, DollarSign, Check, Copy } from "lucide-react"
+import { Calendar, MapPin, Clock, User, DollarSign, Check, Copy, LogIn } from "lucide-react"
 import { generateToken, getAppUrl } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { handleGoogleLogin } from "@/lib/auth"
 import type { Event } from "@/types"
 
 interface MessageEventPageClientProps {
@@ -419,7 +420,7 @@ export default function MessageEventPageClient({ event, responseCount }: Message
                 return null
               })()}
 
-              <Button type="submit" disabled={isSubmitting} size="lg" className="w-full font-light">
+              <Button type="submit" disabled={isSubmitting || !userId} size="lg" className="w-full font-light">
                 {isSubmitting ? "保存中..." : "気持ちを保存する"}
               </Button>
             </form>

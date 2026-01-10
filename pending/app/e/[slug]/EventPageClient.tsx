@@ -500,7 +500,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !userId}
               className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-light shadow-md hover:shadow-lg hover:bg-primary/85 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "送信中..." : "今の気持ちを保存する"}
@@ -580,6 +580,22 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* 未ログインの場合はログインボタンを表示 */}
+            {!userId && (
+              <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-6 text-center">
+                <p className="mb-4 text-sm font-light text-foreground">
+                  気持ちを保存するには、Googleアカウントでログインが必要です
+                </p>
+                <Button
+                  onClick={() => handleGoogleLogin(`/e/${event.slug}`)}
+                  size="lg"
+                  className="w-full font-light"
+                >
+                  <LogIn className="mr-2 size-4" />
+                  Googleでログイン
+                </Button>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="rounded-2xl border border-border/50 bg-muted/25 backdrop-blur-sm p-6 shadow-md">
                 <FeelingSlider
@@ -651,7 +667,7 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
                 <p>スライドは完全匿名性です。</p>
               </div>
 
-              <Button type="submit" disabled={isSubmitting} size="lg" className="w-full font-light">
+              <Button type="submit" disabled={isSubmitting || !userId} size="lg" className="w-full font-light">
                 {isSubmitting ? "保存中..." : "今の気持ちを保存する"}
               </Button>
             </form>
