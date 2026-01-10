@@ -139,6 +139,15 @@ export default function HomePage() {
         } else if (error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404 || error.name === 'AuthApiError') {
           // より詳細な診断情報を提供
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+          
+          // エラーの詳細を確認
+          console.error('🔴 === 404 Error Analysis ===')
+          console.error('🔴 Error occurred during signInWithOAuth call')
+          console.error('🔴 This might be a Supabase API endpoint issue')
+          console.error('🔴 Check if Supabase Auth endpoint is accessible')
+          console.error('🔴 Expected endpoint:', `${supabaseUrl}/auth/v1/authorize`)
+          console.error('🔴 ===========================')
+          
           const diagnosticInfo = `
 【診断情報】
 - Supabase URL: ${supabaseUrl || 'NOT SET'}
@@ -146,11 +155,13 @@ export default function HomePage() {
 - Redirect URL: ${redirectUrl}
 - Error ID: ${error.status || 'N/A'}
 - Error Message: ${error.message}
+- Error Name: ${error.name || 'N/A'}
 
-【考えられる原因】
-1. Supabase DashboardでリダイレクトURLが設定されていない
-2. Supabase URLが間違っている
-3. Google OAuth Providerが有効化されていない
+【考えられる原因（最初のログイン時のみエラー）】
+1. Supabase Auth APIエンドポイントへの最初のリクエストが失敗している
+2. ブラウザのセキュリティ設定やCORSの問題
+3. Supabaseの認証エンドポイントが一時的に利用できない
+4. OAuth認証のリダイレクトURLがSupabase Dashboardに登録されていない
 
 【確認手順】
 1. Supabase Dashboard → Authentication → URL Configuration
@@ -162,6 +173,12 @@ export default function HomePage() {
 3. Vercel Dashboard → Settings → Environment Variables
    - NEXT_PUBLIC_SUPABASE_URL が正しいか確認
    - NEXT_PUBLIC_SUPABASE_ANON_KEY が設定されているか確認
+
+【試すべき対処法】
+1. ブラウザのキャッシュをクリアして再試行
+2. シークレットモードで試す
+3. Supabase Dashboardで設定を再保存（30秒待つ）
+4. Vercelで再デプロイを実行
 
 詳細は FIX_GOOGLE_LOGIN_404.md を参照してください。
           `.trim()
