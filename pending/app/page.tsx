@@ -61,6 +61,11 @@ export default function HomePage() {
     console.log('🔵 Google Login Button Clicked!')
     console.log('🔵 ========================================')
     
+    // Networkタブで確認するためのマーカー
+    console.log('🔵 [Network Debug] Open Network tab in DevTools to see requests')
+    console.log('🔵 [Network Debug] Look for requests to: /auth/v1/authorize')
+    console.log('🔵 [Network Debug] Check status codes: 200 (success) or 404 (error)')
+    
     try {
       const appUrl = getAppUrl()
       const redirectUrl = `${appUrl}/auth/callback`
@@ -123,6 +128,11 @@ export default function HomePage() {
           await new Promise(resolve => setTimeout(resolve, 1000))
         }
         
+        // Supabase認証エンドポイントを直接テスト
+        const authEndpoint = `${supabaseUrl}/auth/v1/authorize`
+        console.log('🔵 [Network Debug] Will request:', authEndpoint)
+        console.log('🔵 [Network Debug] Check Network tab for this request')
+        
         const { data, error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
@@ -133,6 +143,11 @@ export default function HomePage() {
             },
           },
         })
+        
+        // リクエスト後のログ
+        console.log('🔵 [Network Debug] Request completed')
+        console.log('🔵 [Network Debug] Data:', data ? 'Received' : 'None')
+        console.log('🔵 [Network Debug] Error:', error ? 'Yes' : 'No')
         
         if (error) {
           lastError = error
