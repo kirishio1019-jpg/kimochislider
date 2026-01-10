@@ -65,38 +65,78 @@ export default function HomePage() {
       console.log('Redirect URL:', redirectUrl)
       console.log('Window location origin:', window.location.origin)
       console.log('Window location hostname:', window.location.hostname)
+      console.log('Window location href:', window.location.href)
       console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
       console.log('========================')
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      // リダイレクトURLの検証
+      if (!redirectUrl.startsWith('https://') && !redirectUrl.startsWith('http://localhost')) {
+        const errorMsg = `無効なリダイレクトURLです: ${redirectUrl}\n\n本番環境ではhttps://で始まるURLが必要です。`
+        console.error(errorMsg)
+        alert(errorMsg)
+        return
+      }
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       })
+      
       if (error) {
-        console.error('Login error:', error)
-        console.error('Error code:', error.status)
+        console.error('=== OAuth Error Details ===')
+        console.error('Error:', error)
+        console.error('Error name:', error.name)
         console.error('Error message:', error.message)
+        console.error('Error status:', error.status)
+        console.error('Error cause:', error.cause)
+        console.error('Full error object:', JSON.stringify(error, null, 2))
+        console.error('==========================')
         
         // より詳細なエラーメッセージを表示
-        if (error.message.includes('OAuth secret') || error.message.includes('provider')) {
+        if (error.message.includes('OAuth secret') || error.message.includes('provider') || error.message.includes('not enabled')) {
           alert('Google認証が設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → Providers → Google を有効化\n2. Client ID と Client Secret を入力\n\n詳細は GOOGLE_AUTH_SETUP.md を参照してください。')
-        } else if (error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404) {
-          const setupMessage = `リダイレクトURLが設定されていません。\n\n現在のURL: ${appUrl}\nリダイレクトURL: ${redirectUrl}\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → URL Configuration を開く\n2. Redirect URLs に以下を追加：\n   ${redirectUrl}\n3. Site URL を設定：\n   ${appUrl}\n\n設定後、数秒待ってから再度お試しください。\n\n詳細は SUPABASE_REDIRECT_URL_QUICK_FIX.md を参照してください。`
+        } else if (error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404 || error.name === 'AuthApiError') {
+          const setupMessage = `⚠️ リダイレクトURLが設定されていません\n\n現在のURL: ${appUrl}\n必要なリダイレクトURL: ${redirectUrl}\n\n【設定手順】\n1. Supabase Dashboardにアクセス\n2. Authentication → URL Configuration を開く\n3. Redirect URLs に以下を追加：\n   ${redirectUrl}\n4. Site URL を設定：\n   ${appUrl}\n5. Save をクリック\n6. 30秒待ってから再度お試しください\n\n詳細は FIX_GOOGLE_LOGIN_404.md を参照してください。`
           alert(setupMessage)
           console.error('=== Supabase Redirect URL Setup Required ===')
           console.error('Current App URL:', appUrl)
           console.error('Required Redirect URL:', redirectUrl)
+          console.error('Full redirect URL:', redirectUrl)
           console.error('Please add this URL to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs')
           console.error('============================================')
+          
+          // クリップボードにコピーできるようにする
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(redirectUrl).then(() => {
+              console.log('Redirect URL copied to clipboard:', redirectUrl)
+            }).catch(() => {
+              console.log('Failed to copy to clipboard')
+            })
+          }
         } else {
-          alert(`ログインに失敗しました。\n\nエラー: ${error.message}\n\n詳細はコンソールを確認してください。`)
+          alert(`ログインに失敗しました。\n\nエラー: ${error.message}\n\n詳細はコンソール（F12）を確認してください。`)
         }
+      } else if (data?.url) {
+        // OAuth URLが正常に生成された場合
+        console.log('OAuth URL generated successfully:', data.url)
+        // ブラウザでOAuth URLにリダイレクト（通常は自動的に行われる）
       }
     } catch (err) {
-      console.error('Login error:', err)
-      alert('ログインに失敗しました。詳細はコンソールを確認してください。')
+      console.error('=== Unexpected Login Error ===')
+      console.error('Error:', err)
+      console.error('Error type:', err?.constructor?.name)
+      console.error('Error message:', err instanceof Error ? err.message : String(err))
+      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace')
+      console.error('=============================')
+      
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      alert(`ログインに失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`)
     }
   }
 
