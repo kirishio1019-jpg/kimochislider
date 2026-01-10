@@ -312,8 +312,13 @@ export default function HomePage() {
       console.error('🔴 Error stack:', err instanceof Error ? err.stack : 'No stack trace')
       console.error('🔴 ========================================')
       
+      // Networkタブで確認するための追加情報
+      console.error('🔴 [Network Debug] Please check Network tab for failed requests')
+      console.error('🔴 [Network Debug] Look for requests with status 404')
+      console.error('🔴 [Network Debug] Check request URL and response')
+      
       const errorMessage = err instanceof Error ? err.message : String(err)
-      alert(`ログインに失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`)
+      alert(`ログインに失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）とNetworkタブを確認してください。`)
     }
   }
 
