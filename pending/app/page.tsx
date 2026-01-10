@@ -76,13 +76,22 @@ export default function HomePage() {
       })
       if (error) {
         console.error('Login error:', error)
+        console.error('Error code:', error.status)
+        console.error('Error message:', error.message)
+        
         // より詳細なエラーメッセージを表示
         if (error.message.includes('OAuth secret') || error.message.includes('provider')) {
           alert('Google認証が設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → Providers → Google を有効化\n2. Client ID と Client Secret を入力\n\n詳細は GOOGLE_AUTH_SETUP.md を参照してください。')
-        } else if (error.message.includes('404') || error.message.includes('NOT_FOUND')) {
-          alert(`リダイレクトURLが設定されていません。\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → URL Configuration を開く\n2. Redirect URLs に以下を追加：\n   ${redirectUrl}\n3. Site URL を設定：\n   ${appUrl}\n\n詳細は SUPABASE_REDIRECT_URL_QUICK_FIX.md を参照してください。`)
+        } else if (error.message.includes('404') || error.message.includes('NOT_FOUND') || error.status === 404) {
+          const setupMessage = `リダイレクトURLが設定されていません。\n\n現在のURL: ${appUrl}\nリダイレクトURL: ${redirectUrl}\n\nSupabase Dashboardで以下を設定してください：\n1. Authentication → URL Configuration を開く\n2. Redirect URLs に以下を追加：\n   ${redirectUrl}\n3. Site URL を設定：\n   ${appUrl}\n\n設定後、数秒待ってから再度お試しください。\n\n詳細は SUPABASE_REDIRECT_URL_QUICK_FIX.md を参照してください。`
+          alert(setupMessage)
+          console.error('=== Supabase Redirect URL Setup Required ===')
+          console.error('Current App URL:', appUrl)
+          console.error('Required Redirect URL:', redirectUrl)
+          console.error('Please add this URL to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs')
+          console.error('============================================')
         } else {
-          alert('ログインに失敗しました: ' + error.message)
+          alert(`ログインに失敗しました。\n\nエラー: ${error.message}\n\n詳細はコンソールを確認してください。`)
         }
       }
     } catch (err) {
@@ -431,7 +440,7 @@ export default function HomePage() {
               <LogOut className="size-4" />
               ログアウト
             </Button>
-          </div>
+        </div>
         ) : (
           <Button
             onClick={handleGoogleLogin}

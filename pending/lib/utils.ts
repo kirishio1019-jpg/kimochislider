@@ -58,7 +58,8 @@ export function getAppUrl(): string {
   
   // 本番環境かどうかを判定（localhostでない場合）
   const isProduction = !window.location.hostname.includes('localhost') && 
-                       !window.location.hostname.includes('127.0.0.1')
+                       !window.location.hostname.includes('127.0.0.1') &&
+                       window.location.protocol === 'https:'
   
   // 本番環境の場合、常にcurrentOriginを使用（本番URL）
   if (isProduction) {
