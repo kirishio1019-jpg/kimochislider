@@ -141,12 +141,12 @@ export default function HomePage() {
           const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
           
           // エラーの詳細を確認
+          console.error('🔴 ========================================')
           console.error('🔴 === 404 Error Analysis ===')
           console.error('🔴 Error occurred during signInWithOAuth call')
-          console.error('🔴 This might be a Supabase API endpoint issue')
-          console.error('🔴 Check if Supabase Auth endpoint is accessible')
+          console.error('🔴 This is likely a Redirect URL configuration issue')
           console.error('🔴 Expected endpoint:', `${supabaseUrl}/auth/v1/authorize`)
-          console.error('🔴 ===========================')
+          console.error('🔴 ========================================')
           
           const diagnosticInfo = `
 【診断情報】
@@ -157,30 +157,29 @@ export default function HomePage() {
 - Error Message: ${error.message}
 - Error Name: ${error.name || 'N/A'}
 
-【考えられる原因（最初のログイン時のみエラー）】
-1. Supabase Auth APIエンドポイントへの最初のリクエストが失敗している
-2. ブラウザのセキュリティ設定やCORSの問題
-3. Supabaseの認証エンドポイントが一時的に利用できない
-4. OAuth認証のリダイレクトURLがSupabase Dashboardに登録されていない
+【確実な解決方法】
+Supabase Dashboardでワイルドカードパターンを使用してください：
 
-【確認手順】
 1. Supabase Dashboard → Authentication → URL Configuration
-   - Redirect URLs に以下を追加: ${redirectUrl}
-   - Site URL を設定: ${appUrl}
-2. Supabase Dashboard → Authentication → Providers → Google
-   - Google Providerが有効化されているか確認
-   - Client ID と Client Secret が設定されているか確認
-3. Vercel Dashboard → Settings → Environment Variables
-   - NEXT_PUBLIC_SUPABASE_URL が正しいか確認
-   - NEXT_PUBLIC_SUPABASE_ANON_KEY が設定されているか確認
+2. 「Redirect URLs」に以下を追加：
+   https://kimochislider.vercel.app/**
+   https://*.vercel.app/**
+   http://localhost:3000/**
+3. 「Site URL」を設定：
+   https://kimochislider.vercel.app
+4. 「Save」をクリック
+5. 30秒待つ
 
-【試すべき対処法】
-1. ブラウザのキャッシュをクリアして再試行
-2. シークレットモードで試す
-3. Supabase Dashboardで設定を再保存（30秒待つ）
-4. Vercelで再デプロイを実行
+【または、正確なURLを再登録】
+1. 「Redirect URLs」の既存のURLをすべて削除
+2. 以下を正確に追加：
+   ${redirectUrl}
+3. 「Site URL」を設定：
+   ${appUrl}
+4. 「Save」をクリック
+5. 30秒待つ
 
-詳細は FIX_GOOGLE_LOGIN_404.md を参照してください。
+詳細は FINAL_404_FIX.md を参照してください。
           `.trim()
           
           alert(`⚠️ 404エラーが発生しました\n\n${diagnosticInfo}`)
