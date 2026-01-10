@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FeelingSlider } from "@/components/feeling-slider"
-import { Copy, Check, Calendar, MapPin, DollarSign, User } from "lucide-react"
+import { Copy, Check, Calendar, MapPin, DollarSign, User, LogIn } from "lucide-react"
 import { generateToken, getAppUrl } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { handleGoogleLogin } from "@/lib/auth"
 import type { Event } from "@/types"
 
 interface EventPageClientProps {
