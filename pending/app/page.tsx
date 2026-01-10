@@ -56,6 +56,11 @@ export default function HomePage() {
   }, [supabase])
 
   const handleGoogleLogin = async () => {
+    // 最初に必ずログを出力（関数が呼ばれたことを確認）
+    console.log('🔵 ========================================')
+    console.log('🔵 Google Login Button Clicked!')
+    console.log('🔵 ========================================')
+    
     try {
       const appUrl = getAppUrl()
       const redirectUrl = `${appUrl}/auth/callback`
@@ -64,18 +69,18 @@ export default function HomePage() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
       
-      console.log('=== Google Login Debug ===')
-      console.log('App URL:', appUrl)
-      console.log('Redirect URL:', redirectUrl)
-      console.log('Window location origin:', window.location.origin)
-      console.log('Window location hostname:', window.location.hostname)
-      console.log('Window location href:', window.location.href)
-      console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
-      console.log('--- Supabase Configuration ---')
-      console.log('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl)
-      console.log('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'NOT SET')
-      console.log('Supabase URL valid:', supabaseUrl && supabaseUrl.startsWith('https://') && supabaseUrl.includes('.supabase.co'))
-      console.log('========================')
+      console.log('🔵 === Google Login Debug ===')
+      console.log('🔵 App URL:', appUrl)
+      console.log('🔵 Redirect URL:', redirectUrl)
+      console.log('🔵 Window location origin:', window.location.origin)
+      console.log('🔵 Window location hostname:', window.location.hostname)
+      console.log('🔵 Window location href:', window.location.href)
+      console.log('🔵 NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
+      console.log('🔵 --- Supabase Configuration ---')
+      console.log('🔵 NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl)
+      console.log('🔵 NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'NOT SET')
+      console.log('🔵 Supabase URL valid:', supabaseUrl && supabaseUrl.startsWith('https://') && supabaseUrl.includes('.supabase.co'))
+      console.log('🔵 ========================')
       
       // Supabase設定の検証
       if (!supabaseUrl || !supabaseUrl.startsWith('https://') || !supabaseUrl.includes('.supabase.co')) {
@@ -100,11 +105,11 @@ export default function HomePage() {
         return
       }
       
-      console.log('=== Attempting OAuth Sign In ===')
-      console.log('Provider: google')
-      console.log('Redirect To:', redirectUrl)
-      console.log('Supabase Auth Endpoint:', `${supabaseUrl}/auth/v1/authorize`)
-      console.log('===============================')
+      console.log('🔵 === Attempting OAuth Sign In ===')
+      console.log('🔵 Provider: google')
+      console.log('🔵 Redirect To:', redirectUrl)
+      console.log('🔵 Supabase Auth Endpoint:', `${supabaseUrl}/auth/v1/authorize`)
+      console.log('🔵 ===============================')
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -118,14 +123,15 @@ export default function HomePage() {
       })
       
       if (error) {
-        console.error('=== OAuth Error Details ===')
-        console.error('Error:', error)
-        console.error('Error name:', error.name)
-        console.error('Error message:', error.message)
-        console.error('Error status:', error.status)
-        console.error('Error cause:', error.cause)
-        console.error('Full error object:', JSON.stringify(error, null, 2))
-        console.error('==========================')
+        console.error('🔴 ========================================')
+        console.error('🔴 === OAuth Error Details ===')
+        console.error('🔴 Error:', error)
+        console.error('🔴 Error name:', error.name)
+        console.error('🔴 Error message:', error.message)
+        console.error('🔴 Error status:', error.status)
+        console.error('🔴 Error cause:', error.cause)
+        console.error('🔴 Full error object:', JSON.stringify(error, null, 2))
+        console.error('🔴 ========================================')
         
         // より詳細なエラーメッセージを表示
         if (error.message.includes('OAuth secret') || error.message.includes('provider') || error.message.includes('not enabled')) {
@@ -189,12 +195,13 @@ export default function HomePage() {
         // ブラウザでOAuth URLにリダイレクト（通常は自動的に行われる）
       }
     } catch (err) {
-      console.error('=== Unexpected Login Error ===')
-      console.error('Error:', err)
-      console.error('Error type:', err?.constructor?.name)
-      console.error('Error message:', err instanceof Error ? err.message : String(err))
-      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack trace')
-      console.error('=============================')
+      console.error('🔴 ========================================')
+      console.error('🔴 === Unexpected Login Error ===')
+      console.error('🔴 Error:', err)
+      console.error('🔴 Error type:', err?.constructor?.name)
+      console.error('🔴 Error message:', err instanceof Error ? err.message : String(err))
+      console.error('🔴 Error stack:', err instanceof Error ? err.stack : 'No stack trace')
+      console.error('🔴 ========================================')
       
       const errorMessage = err instanceof Error ? err.message : String(err)
       alert(`ログインに失敗しました。\n\nエラー: ${errorMessage}\n\n詳細はコンソール（F12）を確認してください。`)
