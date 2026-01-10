@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // 絶対URLを生成（Vercel本番環境で確実に動作するように）
-  // サーバーサイドでは環境変数を使用、なければデフォルト値を使用
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://your-app-name.vercel.app'
+  // サーバーサイドでは環境変数を使用、なければ本番URLを使用
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kimochislider.vercel.app'
   const pageUrl = `${appUrl}/m/${slug}`
   
   // ユニークなユーザーの回答数を取得（OGP画像用）
@@ -94,11 +94,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // 追加のメタデータ（LINE、Slack、Discord等に対応）
     // Next.jsのMetadata APIでは、otherプロパティで追加のメタタグを設定可能
     other: {
+      // OGP画像の明示的な設定（LINE用）
+      'og:image': ogImageUrl,
+      'og:image:url': ogImageUrl,
       'og:image:secure_url': ogImageUrl,
       'og:image:width': '1200',
       'og:image:height': '630',
       'og:image:type': 'image/png',
       'og:image:alt': `${event.title} - イベントのご招待です`,
+      // LINE用の追加メタデータ
+      'og:site_name': 'きもちスライダー',
+      'og:locale': 'ja_JP',
       // Discord用
       'theme-color': '#ff6b6b',
     },
