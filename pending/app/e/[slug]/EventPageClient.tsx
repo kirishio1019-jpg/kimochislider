@@ -306,6 +306,23 @@ export default function EventPageClient({ event, responseCount }: EventPageClien
             </div>
           </div>
 
+          {/* 未ログインの場合はログインボタンを表示 */}
+          {!userId && (
+            <div className="mb-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-center">
+              <p className="mb-3 text-xs font-light text-foreground">
+                気持ちを保存するには、Googleアカウントでログインが必要です
+              </p>
+              <Button
+                onClick={() => handleGoogleLogin(`/e/${event.slug}`)}
+                size="sm"
+                className="w-full font-light"
+              >
+                <LogIn className="mr-2 size-3" />
+                Googleでログイン
+              </Button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="rounded-2xl border border-border/50 bg-muted/25 backdrop-blur-sm p-6 shadow-md">
               <FeelingSlider

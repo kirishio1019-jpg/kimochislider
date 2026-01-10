@@ -10,8 +10,8 @@ export async function handleGoogleLogin(redirectPath?: string) {
     const appUrl = getAppUrl()
     const supabase = createClient()
     
-    // リダイレクト先を決定
-    const finalRedirectPath = redirectPath || window.location.pathname
+    // リダイレクト先を決定（現在のページに戻る）
+    const finalRedirectPath = redirectPath || (typeof window !== 'undefined' ? window.location.pathname : '/')
     const redirectUrl = `${appUrl}/auth/callback?redirect=${encodeURIComponent(finalRedirectPath)}`
     
     // Supabase設定の確認
