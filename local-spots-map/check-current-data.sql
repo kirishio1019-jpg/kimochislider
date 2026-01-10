@@ -26,3 +26,15 @@ SELECT COUNT(*) as total_spots FROM local_spots;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

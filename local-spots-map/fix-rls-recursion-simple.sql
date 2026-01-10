@@ -74,3 +74,15 @@ CREATE POLICY "Allow authenticated users to create memberships" ON community_mem
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+=== Background Shell 623467 ===
+Command: cd c:\Users\kiris\.cursor\pending && npm run dev
+Working Directory: C:\Users\kiris\.cursor\pending
+Started: 2026-01-09T16:52:53.651Z
+============================================================
+
+�����ꏊ C:\Users\kiris\AppData\Local\Temp\ps-script-32a14368-723b-44ff-bcfe-3d4de244a746.ps1:75 ����:35
++ cd c:\Users\kiris\.cursor\pending && npm run dev
++                                   ~~
+�g�[�N�� '&&' �́A���̃o�[�W�����ł͗L���ȃX�e�[�g�����g��؂�ł͂���܂���B
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : InvalidEndOfLine
+ 
+
+============================================================
+Exited with code: 1
+Ended: 2026-01-09T16:52:54.677Z

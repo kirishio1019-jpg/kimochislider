@@ -49,3 +49,15 @@ WHERE tablename = 'local_spots'
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

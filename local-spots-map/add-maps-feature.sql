@@ -93,3 +93,15 @@ WHERE table_name = 'local_spots' AND column_name = 'map_id';
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

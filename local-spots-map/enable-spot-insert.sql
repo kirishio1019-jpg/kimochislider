@@ -15,3 +15,15 @@ CREATE POLICY "Allow public insert access" ON local_spots
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

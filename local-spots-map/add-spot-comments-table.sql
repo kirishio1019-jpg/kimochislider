@@ -74,3 +74,14 @@ WHERE tablename = 'spot_comments';
 
 
 
+
+
+
+
+
+
+
+
+
+
+

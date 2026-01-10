@@ -88,4 +88,3 @@ export const DEFAULT_CATEGORY_LABELS: Record<string, string> = {
 // 後方互換性のため（既存コード用）
 export const CATEGORY_COLORS = DEFAULT_CATEGORY_COLORS;
 export const CATEGORY_LABELS = DEFAULT_CATEGORY_LABELS;
-

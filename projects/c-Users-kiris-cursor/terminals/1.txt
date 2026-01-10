@@ -1,0 +1,51 @@
+---
+pid: 25400
+cwd: |
+  C:\Users\kiris\.cursor
+---
+PS C:\Users\kiris\.cursor>
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+
+PS C:\Users\kiris\.cursor> 
+ *  履歴が復元されました 
+PS C:\Users\kiris\.cursor> # 1. プロジェクトディレクトリに移動
+>> cd c:\Users\kiris\.cursor\pending
+>> 
+>> # 2. リモートURLを新しいリポジトリに変更
+>> git remote set-url origin https://github.com/b2400560-del/kimochislider.git
+>> 
+>> # 3. 変更をステージング
+>> git add .
+>> 
+>> # 4. コミット
+>> git commit -m "Initial commit: きもちスライダーアプリ"
+>>
+>> # 5. 新しいリポジトリにプッシュ
+>> git push -u origin main
+[main 1bb2f71] Initial commit: きもちスライダーアプリ
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+remote: Permission to b2400560-del/kimochislider.git denied to kirishio1019-jpg.
+fatal: unable to access 'https://github.com/b2400560-del/kimochislider.git/': The requested URL returned error: 403     
+PS C:\Users\kiris\.cursor\pending> ^C
+PS C:\Users\kiris\.cursor\pending>

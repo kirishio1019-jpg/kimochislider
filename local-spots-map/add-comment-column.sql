@@ -24,3 +24,15 @@ WHERE table_name = 'local_spots'
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

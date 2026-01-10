@@ -15,3 +15,15 @@ CREATE POLICY "Allow public delete access" ON local_spots
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

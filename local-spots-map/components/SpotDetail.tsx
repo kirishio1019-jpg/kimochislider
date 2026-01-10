@@ -103,3 +103,15 @@ export default function SpotDetail({ spot, onClose }: SpotDetailProps) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { Metadata } from 'next'
 import MessageEventPageClient from './MessageEventPageClient'
 
@@ -108,6 +108,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function MessageEventPage({ params }: PageProps) {
   const { slug } = await params
   const supabase = await createClient()
+
+  // Googleログイン必須チェック
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/')
+  }
 
   const { data: event, error } = await supabase
     .from('events')

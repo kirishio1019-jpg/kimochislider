@@ -2,8 +2,6 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
-import type { User } from "@supabase/supabase-js"
 
 interface Question {
   id: number
@@ -32,33 +30,6 @@ export default function QuestionsPage() {
   const [newComment, setNewComment] = useState<Record<number, string>>({})
   const [expandedQuestions, setExpandedQuestions] = useState<Set<number>>(new Set())
   const [isClient, setIsClient] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
-  const [questionIsAnonymous, setQuestionIsAnonymous] = useState(false)
-  const [commentIsAnonymous, setCommentIsAnonymous] = useState<Record<number, boolean>>({})
-
-  // ユーザー情報を取得
-  useEffect(() => {
-    if (isSupabaseConfigured()) {
-      try {
-        const supabase = createClient()
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          setUser(user)
-        }).catch((error) => {
-          console.error('Failed to get user:', error)
-        })
-
-        const {
-          data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-          setUser(session?.user ?? null)
-        })
-
-        return () => subscription.unsubscribe()
-      } catch (error) {
-        console.error('Failed to initialize Supabase client:', error)
-      }
-    }
-  }, [])
 
   // クライアントサイドでのみlocalStorageから復元
   useEffect(() => {
@@ -88,18 +59,6 @@ export default function QuestionsPage() {
       try {
         const ids = JSON.parse(savedExpanded)
         setExpandedQuestions(new Set(ids))
-      } catch (e) {
-        // パースエラー時は初期値を使用
-      }
-    }
-    const savedQuestionIsAnonymous = localStorage.getItem('questionIsAnonymous')
-    if (savedQuestionIsAnonymous !== null) {
-      setQuestionIsAnonymous(savedQuestionIsAnonymous === 'true')
-    }
-    const savedCommentIsAnonymous = localStorage.getItem('commentIsAnonymous')
-    if (savedCommentIsAnonymous) {
-      try {
-        setCommentIsAnonymous(JSON.parse(savedCommentIsAnonymous))
       } catch (e) {
         // パースエラー時は初期値を使用
       }
@@ -134,40 +93,14 @@ export default function QuestionsPage() {
     }
   }, [expandedQuestions, isClient])
 
-  // 匿名設定をlocalStorageに保存
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem('questionIsAnonymous', questionIsAnonymous.toString())
-    }
-  }, [questionIsAnonymous, isClient])
-
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem('commentIsAnonymous', JSON.stringify(commentIsAnonymous))
-    }
-  }, [commentIsAnonymous, isClient])
-
-  // ユーザー名を取得する関数
-  const getUserDisplayName = (): string => {
-    if (!user) return "匿名"
-    return user.user_metadata?.full_name || 
-           user.user_metadata?.name || 
-           user.email?.split('@')[0] || 
-           "ユーザー"
-  }
-
   // 質問を投稿する
   const handlePostQuestion = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newQuestion.trim()) return
 
-    // ログインしていない場合は匿名で投稿
-    const isAnonymous = !user || questionIsAnonymous
-    const authorName = isAnonymous ? "匿名" : getUserDisplayName()
-
     const newQuestionData: Question = {
       id: Date.now(),
-      author: authorName,
+      author: "匿名",
       country: "",
       university: "",
       question: newQuestion,
@@ -189,13 +122,9 @@ export default function QuestionsPage() {
     const commentText = newComment[questionId]
     if (!commentText?.trim()) return
 
-    // ログインしていない場合は匿名で投稿
-    const isAnonymous = !user || commentIsAnonymous[questionId] === true // デフォルトは名前
-    const authorName = isAnonymous ? "匿名" : getUserDisplayName()
-
     const newCommentData: Comment = {
       id: Date.now(),
-      author: authorName,
+      author: "匿名",
       content: commentText,
       date: new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' }),
     }
@@ -238,47 +167,19 @@ export default function QuestionsPage() {
 
       {/* New Question Form */}
       <section className="bg-card border border-border rounded-lg p-6 mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">質問を投稿する</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-4">質問を投稿する（匿名）</h2>
         <form onSubmit={handlePostQuestion} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">質問の内容</label>
             <textarea
               value={newQuestion}
               onChange={(e) => setNewQuestion(e.target.value)}
-              placeholder="留学先の選択や、体験についての質問をしてください。"
+              placeholder="留学先の選択や、体験についての質問をしてください。匿名です。"
               rows={3}
               className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
               required
             />
           </div>
-          {user ? (
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="question-anonymous"
-                checked={questionIsAnonymous}
-                onChange={(e) => setQuestionIsAnonymous(e.target.checked)}
-                className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
-              />
-              <label htmlFor="question-anonymous" className="text-sm text-foreground cursor-pointer">
-                匿名で投稿する
-              </label>
-              {!questionIsAnonymous && (
-                <span className="text-xs text-muted-foreground ml-2">
-                  （{getUserDisplayName()}として投稿されます）
-                </span>
-              )}
-              {questionIsAnonymous && (
-                <span className="text-xs text-muted-foreground ml-2">
-                  （匿名として投稿されます）
-                </span>
-              )}
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground">
-              （ログインすると名前で投稿できます。現在は匿名で投稿されます）
-            </div>
-          )}
           <button
             type="submit"
             className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
@@ -365,7 +266,7 @@ export default function QuestionsPage() {
 
                     {/* Comment Form */}
                     <div className="border-t border-border pt-4 mt-4">
-                      <h4 className="font-semibold text-foreground mb-3">回答を投稿する</h4>
+                      <h4 className="font-semibold text-foreground mb-3">回答を投稿する（匿名）</h4>
                       <form onSubmit={(e) => handlePostComment(q.id, e)} className="space-y-3">
                         <textarea
                           value={newComment[q.id] || ""}
@@ -380,39 +281,6 @@ export default function QuestionsPage() {
                           className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
                           required
                         />
-                        {user ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              id={`comment-anonymous-${q.id}`}
-                              checked={commentIsAnonymous[q.id] === true}
-                              onChange={(e) =>
-                                setCommentIsAnonymous((prev) => ({
-                                  ...prev,
-                                  [q.id]: e.target.checked,
-                                }))
-                              }
-                              className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
-                            />
-                            <label htmlFor={`comment-anonymous-${q.id}`} className="text-sm text-foreground cursor-pointer">
-                              匿名で投稿する
-                            </label>
-                            {commentIsAnonymous[q.id] !== true && (
-                              <span className="text-xs text-muted-foreground ml-2">
-                                （{getUserDisplayName()}として投稿されます）
-                              </span>
-                            )}
-                            {commentIsAnonymous[q.id] === true && (
-                              <span className="text-xs text-muted-foreground ml-2">
-                                （匿名として投稿されます）
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground">
-                            （ログインすると名前で投稿できます。現在は匿名で投稿されます）
-                          </div>
-                        )}
                         <button
                           type="submit"
                           className="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity text-sm"

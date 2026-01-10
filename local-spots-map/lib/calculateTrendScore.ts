@@ -46,3 +46,15 @@ export function calculateTrendScoresForSpots(spots: LocalSpot[]): LocalSpot[] {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

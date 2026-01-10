@@ -86,8 +86,11 @@ export function FeelingSlider({
     }
     
     // 興味の度合いのみをスコアとして使用（後方互換性のため）
-    onChange(clampedX)
-  }, [onChange, onXChange])
+    // ただし、onYChangeが設定されている場合は、yValueを変更しない
+    if (!onYChange) {
+      onChange(clampedX)
+    }
+  }, [onChange, onXChange, onYChange])
 
   // 縦軸スライダーの変更ハンドラー（行けなそう←→行けそう）
   const handleYChange = useCallback((newY: number) => {
@@ -110,7 +113,12 @@ export function FeelingSlider({
     } else {
       setInternalAvailabilityStatus(status)
     }
-  }, [onYChange, onAvailabilityChange])
+    
+    // onXChangeが設定されている場合は、xValueを変更しない
+    if (!onXChange) {
+      // 後方互換性のため、スコアを更新しない（yValueのみ変更）
+    }
+  }, [onYChange, onAvailabilityChange, onXChange])
 
   // yValueスライダーのドラッグハンドラー（マウスとタッチの両方に対応）
   const handleYSliderMouseDown = useCallback((e: React.MouseEvent) => {
@@ -217,8 +225,12 @@ export function FeelingSlider({
       setInternalYValue(newY)
     }
     
-    const score = calculateScore(newX, newY)
-    onChange(score)
+    // onXChangeとonYChangeが設定されている場合は、onChangeを呼び出さない（個別制御）
+    // そうでない場合は、後方互換性のためonChangeを呼び出す
+    if (!onXChange || !onYChange) {
+      const score = calculateScore(newX, newY)
+      onChange(score)
+    }
   }, [disabled, calculateScore, onChange, onXChange, onYChange, matrixMargin])
 
   const handleMatrixClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {

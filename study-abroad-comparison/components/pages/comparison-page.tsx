@@ -424,11 +424,11 @@ export default function ComparisonPage() {
   }, [selectedRegion])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-w-0">
-      <h1 className="text-responsive-3xl font-bold text-foreground mb-8 break-words">留学先を比較</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-3xl font-bold text-foreground mb-8">留学先を比較</h1>
 
-      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 min-w-0">
-        <p className="text-responsive-sm text-foreground break-words">
+      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
+        <p className="text-sm text-foreground">
           比較したい留学先を選択してください。最大3つまで比較できます。
           <span className="font-semibold ml-2">現在: {selectedUniversities.length}/3選択</span>
         </p>
@@ -531,18 +531,18 @@ export default function ComparisonPage() {
       {/* Comparison table */}
       {comparisonData.length > 0 && (
         <div className="bg-card border border-border rounded-lg overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-border">
-            <h2 className="text-responsive-2xl font-bold text-foreground break-words">比較結果</h2>
+          <div className="p-6 border-b border-border">
+            <h2 className="text-2xl font-bold text-foreground">比較結果</h2>
           </div>
-          <div className="overflow-x-auto min-w-0">
-            <table className="w-full min-w-[600px]">
+          <div className="overflow-x-auto">
+            <table className="w-full">
               <thead>
                 <tr className="bg-muted border-b border-border">
-                  <th className="px-3 sm:px-6 py-4 text-left text-responsive-sm font-semibold text-foreground sticky left-0 bg-muted z-10 break-words">項目</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-foreground sticky left-0 bg-muted z-10">項目</th>
                   {comparisonData.map((item) => (
-                    <th key={item.university.id} className="px-3 sm:px-6 py-4 text-left text-responsive-sm font-semibold text-foreground min-w-[200px] break-words">
-                      <div className="break-words">{item.university.name}</div>
-                      <div className="text-responsive-xs text-muted-foreground font-normal break-words">
+                    <th key={item.university.id} className="px-6 py-4 text-left text-sm font-semibold text-foreground min-w-[200px]">
+                      <div>{item.university.name}</div>
+                      <div className="text-xs text-muted-foreground font-normal">
                         {item.university.country}, {item.university.region}
                       </div>
                     </th>
@@ -552,14 +552,14 @@ export default function ComparisonPage() {
               <tbody>
                 {/* 投稿者 */}
                 <tr className="border-b border-border">
-                  <td colSpan={comparisonData.length + 1} className="px-3 sm:px-6 py-3 bg-muted/30">
-                    <span className="text-responsive-base font-semibold text-foreground break-words">投稿者</span>
+                  <td colSpan={comparisonData.length + 1} className="px-6 py-3 bg-muted/30">
+                    <span className="font-semibold text-foreground">投稿者</span>
                   </td>
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">レビュー投稿者</td>
+                  <td className="px-6 py-4 font-medium text-foreground">レビュー投稿者</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.reviews.length > 0 ? (
                         <div className="space-y-3">
                           {/* 投稿者選択ドロップダウン */}
@@ -652,30 +652,30 @@ export default function ComparisonPage() {
 
                 {/* 基本情報 */}
                 <tr className="border-b border-border">
-                  <td colSpan={comparisonData.length + 1} className="px-3 sm:px-6 py-3 bg-muted/30">
-                    <span className="text-responsive-base font-semibold text-foreground break-words">基本情報</span>
+                  <td colSpan={comparisonData.length + 1} className="px-6 py-3 bg-muted/30">
+                    <span className="font-semibold text-foreground">基本情報</span>
                   </td>
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">メジャー</td>
+                  <td className="px-6 py-4 font-medium text-foreground">メジャー</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.major || "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">留学先での専攻</td>
+                  <td className="px-6 py-4 font-medium text-foreground">留学先での専攻</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.studyMajor || "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">強い分野</td>
+                  <td className="px-6 py-4 font-medium text-foreground">強い分野</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.strongFields && item.selectedReview.strongFields.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {item.selectedReview.strongFields.map((field, idx) => (
@@ -691,30 +691,30 @@ export default function ComparisonPage() {
 
                 {/* 留学期間 */}
                 <tr className="border-b border-border">
-                  <td colSpan={comparisonData.length + 1} className="px-3 sm:px-6 py-3 bg-muted/30">
-                    <span className="text-responsive-base font-semibold text-foreground break-words">留学期間</span>
+                  <td colSpan={comparisonData.length + 1} className="px-6 py-3 bg-muted/30">
+                    <span className="font-semibold text-foreground">留学期間</span>
                   </td>
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">留学開始日</td>
+                  <td className="px-6 py-4 font-medium text-foreground">留学開始日</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.startDate ? new Date(item.selectedReview.startDate).toLocaleDateString('ja-JP') : "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">留学終了日</td>
+                  <td className="px-6 py-4 font-medium text-foreground">留学終了日</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.endDate ? new Date(item.selectedReview.endDate).toLocaleDateString('ja-JP') : "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">長期休暇の期間</td>
+                  <td className="px-6 py-4 font-medium text-foreground">長期休暇の期間</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.vacationPeriod || "-"}
                     </td>
                   ))}
@@ -722,30 +722,30 @@ export default function ComparisonPage() {
 
                 {/* 学業成果 */}
                 <tr className="border-b border-border">
-                  <td colSpan={comparisonData.length + 1} className="px-3 sm:px-6 py-3 bg-muted/30">
-                    <span className="text-responsive-base font-semibold text-foreground break-words">学業成果</span>
+                  <td colSpan={comparisonData.length + 1} className="px-6 py-3 bg-muted/30">
+                    <span className="font-semibold text-foreground">学業成果</span>
                   </td>
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">現地で取得した単位数</td>
+                  <td className="px-6 py-4 font-medium text-foreground">現地で取得した単位数</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.creditsEarned || "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">AIUへ持ち帰った単位数</td>
+                  <td className="px-6 py-4 font-medium text-foreground">AIUへ持ち帰った単位数</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.creditsTransferred || "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">持ち帰った300番台の単位数</td>
+                  <td className="px-6 py-4 font-medium text-foreground">持ち帰った300番台の単位数</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.credits300Level || "-"}
                     </td>
                   ))}
@@ -753,30 +753,30 @@ export default function ComparisonPage() {
 
                 {/* 語学・コミュニケーション力 */}
                 <tr className="border-b border-border">
-                  <td colSpan={comparisonData.length + 1} className="px-3 sm:px-6 py-3 bg-muted/30">
-                    <span className="text-responsive-base font-semibold text-foreground break-words">語学・コミュニケーション力</span>
+                  <td colSpan={comparisonData.length + 1} className="px-6 py-3 bg-muted/30">
+                    <span className="font-semibold text-foreground">語学・コミュニケーション力</span>
                   </td>
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">語学資格</td>
+                  <td className="px-6 py-4 font-medium text-foreground">語学資格</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.languageCert || "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">スコア</td>
+                  <td className="px-6 py-4 font-medium text-foreground">スコア</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.languageScore || "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">授業言語</td>
+                  <td className="px-6 py-4 font-medium text-foreground">授業言語</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.classLanguage || "-"}
                     </td>
                   ))}
@@ -784,78 +784,78 @@ export default function ComparisonPage() {
 
                 {/* 生活・文化情報 */}
                 <tr className="border-b border-border">
-                  <td colSpan={comparisonData.length + 1} className="px-3 sm:px-6 py-3 bg-muted/30">
-                    <span className="text-responsive-base font-semibold text-foreground break-words">生活・文化情報</span>
+                  <td colSpan={comparisonData.length + 1} className="px-6 py-3 bg-muted/30">
+                    <span className="font-semibold text-foreground">生活・文化情報</span>
                   </td>
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">物価レベル</td>
+                  <td className="px-6 py-4 font-medium text-foreground">物価レベル</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {item.selectedReview?.costOfLiving ? costOfLivingLabels[item.selectedReview.costOfLiving] || item.selectedReview.costOfLiving : "-"}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">食費（月額）</td>
+                  <td className="px-6 py-4 font-medium text-foreground">食費（月額）</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.foodCost)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">家賃（月額）</td>
+                  <td className="px-6 py-4 font-medium text-foreground">家賃（月額）</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.rent)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">国民性の印象</td>
+                  <td className="px-6 py-4 font-medium text-foreground">国民性の印象</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.culturalImpression)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">治安</td>
+                  <td className="px-6 py-4 font-medium text-foreground">治安</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.safety)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">気候</td>
+                  <td className="px-6 py-4 font-medium text-foreground">気候</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.climate)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">日々の食事</td>
+                  <td className="px-6 py-4 font-medium text-foreground">日々の食事</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.dailyMeals)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">住んでいた場所</td>
+                  <td className="px-6 py-4 font-medium text-foreground">住んでいた場所</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.accommodation)}
                     </td>
                   ))}
                 </tr>
                 <tr className="border-b border-border hover:bg-muted/50">
-                  <td className="px-3 sm:px-6 py-4 text-responsive-sm font-medium text-foreground break-words">課外活動</td>
+                  <td className="px-6 py-4 font-medium text-foreground">課外活動</td>
                   {comparisonData.map((item) => (
-                    <td key={item.university.id} className="px-3 sm:px-6 py-4 text-responsive-sm text-foreground min-w-0 break-words">
+                    <td key={item.university.id} className="px-6 py-4 text-foreground">
                       {renderReviewValue(item.selectedReview?.extracurricularActivities)}
                     </td>
                   ))}

@@ -1,0 +1,81 @@
+=== Background Shell 697032 ===
+Command: cd c:\Users\kiris\.cursor\pending; npm run dev
+Working Directory: C:\Users\kiris\.cursor\pending
+Started: 2026-01-09T03:07:13.473Z
+============================================================
+
+
+> kimochi-slider@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.102.12.74:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 3.9s
+ GET / 200 in 2.3s (compile: 1152ms, render: 1121ms)
+ GET / 200 in 288ms (compile: 53ms, render: 235ms)
+ GET /auth/callback?code=a9b27ef1-8a2d-4410-b132-bd326628c788 307 in 1866ms (compile: 1013ms, render: 853ms)
+ GET /my-events 200 in 1592ms (compile: 361ms, render: 1231ms)
+ GET /my-events/00d3b4db-7895-4d1a-bf47-8dba55abdb75 200 in 4.7s (compile: 3.4s, render: 1382ms)
+ GET /embed/-gicg6i 200 in 3.8s (compile: 2.7s, render: 1108ms)
+✓ Compiled in 1776ms
+✓ Compiled in 131ms
+✓ Compiled in 120ms
+✓ Compiled in 112ms
+✓ Compiled in 116ms
+✓ Compiled in 113ms
+✓ Compiled in 99ms
+✓ Compiled in 101ms
+✓ Compiled in 102ms
+✓ Compiled in 186ms
+✓ Compiled in 85ms
+✓ Compiled in 91ms
+✓ Compiled in 149ms
+✓ Compiled in 260ms
+✓ Compiled in 147ms
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+✓ Compiled in 94ms
+ GET /embed/-gicg6i 200 in 2.1s (compile: 260ms, render: 1836ms)
+✓ Compiled in 134ms
+✓ Compiled in 234ms
+✓ Compiled in 115ms
+✓ Compiled in 107ms
+✓ Compiled in 98ms
+✓ Compiled in 108ms
+✓ Compiled in 117ms
+✓ Compiled in 389ms
+✓ Compiled in 99ms
+✓ Compiled in 110ms
+✓ Compiled in 86ms
+✓ Compiled in 110ms
+✓ Compiled in 158ms
+✓ Compiled in 111ms
+✓ Compiled in 87ms
+✓ Compiled in 93ms
+✓ Compiled in 225ms
+✓ Compiled in 93ms
+✓ Compiled in 91ms
+ GET /embed/-gicg6i 200 in 2.3s (compile: 315ms, render: 1989ms)
+✓ Compiled in 107ms
+✓ Compiled in 96ms
+✓ Compiled in 83ms
+✓ Compiled in 95ms
+ GET /embed/-gicg6i 200 in 1701ms (compile: 315ms, render: 1386ms)
+✓ Compiled in 101ms
+✓ Compiled in 101ms
+ GET /embed/-gicg6i 200 in 1569ms (compile: 306ms, render: 1263ms)
+ GET /embed/-gicg6i 200 in 1160ms (compile: 40ms, render: 1120ms)
+ GET /embed/-gicg6i 200 in 694ms (compile: 35ms, render: 659ms)
+ GET /embed/-gicg6i 200 in 1066ms (compile: 50ms, render: 1016ms)
+✓ Compiled in 92ms
+✓ Compiled in 134ms
+ GET /embed/-gicg6i 200 in 2.5s (compile: 416ms, render: 2.1s)
+ GET / 200 in 100ms (compile: 13ms, render: 87ms)
+ GET / 200 in 84ms (compile: 16ms, render: 68ms)
+
+============================================================
+Exited with code: 4294967295
+Ended: 2026-01-09T16:58:19.070Z

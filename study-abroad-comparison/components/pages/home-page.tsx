@@ -58,13 +58,13 @@ export default function HomePage() {
       <section className="bg-gradient-to-br from-card via-background to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
           <div className="text-center">
-            <div className="inline-block mb-4 px-3 sm:px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
-              <p className="text-responsive-sm font-medium text-primary break-words">世界中の留学体験にアクセス</p>
+            <div className="inline-block mb-4 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full">
+              <p className="text-sm font-medium text-primary">世界中の留学体験にアクセス</p>
             </div>
-            <h1 className="text-responsive-5xl sm:text-responsive-6xl font-bold text-foreground mb-6 text-balance leading-tight break-words">
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 text-balance leading-tight">
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">あなたはどこを選ぶ？</span>
             </h1>
-            <p className="text-responsive-lg text-muted-foreground mb-8 max-w-2xl mx-auto text-balance leading-relaxed break-words px-4">
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto text-balance leading-relaxed">
                 先輩のリアルな留学体験にアクセス。自分の条件に近い声を探して、最適な留学先を見つけよう。
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function HomePage() {
               />
             </svg>
             <div className="flex-1">
-              <p className="text-responsive-sm text-muted-foreground leading-relaxed break-words">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 <span className="font-medium text-foreground">ご注意：</span>
                 本サイトに掲載されている情報は、学生の個人体験談に基づく非公式な情報です。正確な留学情報や最新の情報については、必ず
                 <span className="font-medium text-foreground">大学の公式ホームページ</span>
@@ -105,8 +105,8 @@ export default function HomePage() {
       {/* Popular Countries Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
         <div className="mb-2">
-          <h2 className="text-responsive-3xl font-bold text-foreground mb-2 break-words">人気の留学先</h2>
-          <p className="text-responsive-base text-muted-foreground break-words">多くの学生が注目している国をチェック</p>
+          <h2 className="text-3xl font-bold text-foreground mb-2">人気の留学先</h2>
+          <p className="text-muted-foreground">多くの学生が注目している国をチェック</p>
         </div>
         <div className="mt-8">
           <CountryStatsGrid />
@@ -116,8 +116,8 @@ export default function HomePage() {
       {/* Recent Reviews Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="mb-8">
-          <h2 className="text-responsive-3xl font-bold text-foreground mb-2 break-words">最新レビュー</h2>
-          <p className="text-responsive-base text-muted-foreground break-words">新しく投稿された体験談をチェック</p>
+          <h2 className="text-3xl font-bold text-foreground mb-2">最新レビュー</h2>
+          <p className="text-muted-foreground">新しく投稿された体験談をチェック</p>
         </div>
         <div className="grid gap-6">
           {reviews.length > 0 ? (

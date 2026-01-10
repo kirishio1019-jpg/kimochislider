@@ -42,3 +42,15 @@ GRANT EXECUTE ON FUNCTION update_spot_likes(UUID) TO anon;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

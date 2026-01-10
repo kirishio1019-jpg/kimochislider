@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import EventPageClient from './EventPageClient'
 
 interface PageProps {
@@ -9,6 +9,13 @@ interface PageProps {
 export default async function EventPage({ params }: PageProps) {
   const { slug } = await params
   const supabase = await createClient()
+
+  // Googleログイン必須チェック
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/')
+  }
 
   const { data: event, error } = await supabase
     .from('events')

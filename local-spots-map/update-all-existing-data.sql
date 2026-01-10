@@ -30,3 +30,15 @@ WHERE trend_score IS NULL OR trend_score = 50;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

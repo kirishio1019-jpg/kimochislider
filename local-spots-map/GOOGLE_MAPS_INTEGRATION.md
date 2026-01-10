@@ -80,3 +80,15 @@ Google Maps Places APIは使用量に応じて課金されます：
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+

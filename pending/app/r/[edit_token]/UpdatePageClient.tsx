@@ -4,13 +4,11 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FeelingSlider } from "@/components/feeling-slider"
-import { Calendar, MapPin, ArrowRight } from "lucide-react"
+import { Calendar, MapPin } from "lucide-react"
 import type { Event, Response } from "@/types"
-import { getScoreCategory } from "@/types"
 
 interface UpdatePageClientProps {
   editToken: string
@@ -24,14 +22,13 @@ export default function UpdatePageClient({
   event,
 }: UpdatePageClientProps) {
   const [score, setScore] = useState(response.score)
-  const [email, setEmail] = useState(response.email || "")
+  const [xValue, setXValue] = useState(response.x_value || 0)
+  const [yValue, setYValue] = useState(response.y_value || 50)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [updated, setUpdated] = useState(false)
-  const [previousCategory, setPreviousCategory] = useState(getScoreCategory(response.score))
 
   const startDate = new Date(event.start_at)
-  const currentCategory = getScoreCategory(score)
-  const hasChanged = score !== response.score || email !== (response.email || "")
+  const hasChanged = xValue !== (response.x_value || 0) || yValue !== (response.y_value || 50)
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,19 +41,10 @@ export default function UpdatePageClient({
       body: JSON.stringify({
         edit_token: editToken,
         score,
+        x_value: xValue,
+        y_value: yValue,
       }),
     })
-
-    if (response.ok && email) {
-      await fetch('/api/responses/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          edit_token: editToken,
-          email,
-        }),
-      })
-    }
 
     setUpdated(true)
     setIsSubmitting(false)
@@ -87,19 +75,6 @@ export default function UpdatePageClient({
               </div>
             </div>
 
-            {/* Previous feeling */}
-            <div className="flex flex-col gap-2">
-              <Label className="text-sm text-muted-foreground">前回の気持ち</Label>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 rounded-lg border bg-card p-3 text-center">
-                  <p className="text-sm font-medium">{previousCategory}</p>
-                </div>
-                <ArrowRight className="size-5 shrink-0 text-muted-foreground" />
-                <div className="flex-1 rounded-lg border-2 border-primary bg-primary/5 p-3 text-center">
-                  <p className="text-sm font-medium text-primary">{currentCategory}</p>
-                </div>
-              </div>
-            </div>
 
             {/* Important notices */}
             <div className="flex flex-col gap-3">
@@ -115,21 +90,15 @@ export default function UpdatePageClient({
             <form onSubmit={handleUpdate} className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <Label className="text-base font-semibold">今の参加したい気持ちは？</Label>
-                <FeelingSlider value={score} onChange={setScore} disabled={isSubmitting} />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="email" className="text-sm">
-                  リマインドメール
-                  <span className="ml-2 font-normal text-muted-foreground">（任意）</span>
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                <FeelingSlider 
+                  value={score} 
+                  onChange={setScore} 
                   disabled={isSubmitting}
+                  xValue={xValue}
+                  yValue={yValue}
+                  onXChange={setXValue}
+                  onYChange={setYValue}
+                  showMatrix={false}
                 />
               </div>
 

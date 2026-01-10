@@ -23,3 +23,15 @@ WHERE trend_score IS NULL;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
